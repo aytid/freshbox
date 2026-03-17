@@ -4,167 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FRESHBOX - Fresh Fruits & Vegetables Delivered</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style>
-        * {
-            font-family: 'Inter', sans-serif;
-        }
-        h1, h2, h3, .brand-font {
-            font-family: 'Playfair Display', serif;
-        }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #22c55e;
-            border-radius: 4px;
-        }
-        
-        /* Animations */
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes pulse-ring {
-            0% { transform: scale(0.8); opacity: 0.5; }
-            100% { transform: scale(1.3); opacity: 0; }
-        }
-        
-        .animate-float { animation: float 3s ease-in-out infinite; }
-        .animate-slide-in { animation: slideIn 0.3s ease-out; }
-        .animate-fade-in { animation: fadeIn 0.6s ease-out; }
-        
-        .cart-badge-pulse::before {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: #ef4444;
-            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-            z-index: -1;
-        }
-        
-        /* Glassmorphism */
-        .glass {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        
-        .glass-dark {
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
-        
-        /* Product Card Hover Effects */
-        .product-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .product-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.1);
-        }
-        
-        /* Organic Pattern Background */
-        .organic-pattern {
-            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2322c55e' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        }
-        
-        /* Loader */
-        .loader {
-            border: 3px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 3px solid #22c55e;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Checkout Progress */
-        .progress-step.active {
-            background: #22c55e;
-            color: white;
-        }
-        .progress-step.completed {
-            background: #16a34a;
-            color: white;
-        }
-        
-        /* Input Focus Effects */
-        .input-focus:focus {
-            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
-            border-color: #22c55e;
-        }
-        
-        /* Category Pill Active State */
-        .category-pill.active {
-            background: #22c55e;
-            color: white;
-            transform: scale(1.05);
-        }
-        
-        /* Cart Sidebar */
-        .cart-sidebar {
-            transform: translateX(100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .cart-sidebar.open {
-            transform: translateX(0);
-        }
-        
-        /* Toast Notification */
-        .toast {
-            transform: translateX(120%);
-            transition: transform 0.3s ease-out;
-        }
-        .toast.show {
-            transform: translateX(0);
-        }
-        
-        /* Payment Card Selection */
-        .payment-method.selected {
-            border-color: #22c55e;
-            background: rgba(34, 197, 94, 0.05);
-        }
-        
-        /* Smooth Scroll */
-        html {
-            scroll-behavior: smooth;
-        }
-        
-        /* Image Loading Placeholder */
-        .img-loading {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-        }
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body class="bg-gray-50 organic-pattern min-h-screen">
 
@@ -186,6 +30,8 @@
                     <button onclick="app.scrollToProducts()" class="nav-link text-gray-700 hover:text-green-600 font-medium transition-colors">Shop</button>
                     <button onclick="app.navigate('about')" class="nav-link text-gray-700 hover:text-green-600 font-medium transition-colors">About</button>
                     <button onclick="app.navigate('contact')" class="nav-link text-gray-700 hover:text-green-600 font-medium transition-colors">Contact</button>
+                    <button onclick="app.navigate('orders')" id="nav-orders" class="nav-link text-gray-700 hover:text-green-600 font-medium transition-colors hidden">My Orders</button>
+                    <button onclick="app.navigate('admin')" id="nav-admin" class="nav-link text-gray-700 hover:text-green-600 font-medium transition-colors hidden">Admin</button>
                 </div>
 
                 <!-- Right Icons -->
@@ -193,10 +39,32 @@
                     <button class="p-2 hover:bg-gray-100 rounded-full transition-colors relative" onclick="app.toggleSearch()">
                         <i data-lucide="search" class="w-5 h-5 text-gray-700"></i>
                     </button>
-                    <button class="p-2 hover:bg-gray-100 rounded-full transition-colors relative" onclick="app.toggleCart()">
-                        <i data-lucide="shopping-bag" class="w-5 h-5 text-gray-700"></i>
-                        <span id="cart-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold cart-badge-pulse hidden">0</span>
-                    </button>
+                    
+                    <!-- User Menu (Logged Out) -->
+                    <div id="user-menu" class="hidden md:flex items-center">
+                        <button onclick="app.toggleAuth()" class="text-gray-700 hover:text-green-600 font-medium transition-colors">Sign In</button>
+                    </div>
+                    
+                    <!-- User Menu (Logged In) -->
+                    <div id="user-logged-in" class="hidden md:flex items-center space-x-4">
+                        <button class="p-2 hover:bg-gray-100 rounded-full transition-colors relative" onclick="app.toggleCart()">
+                            <i data-lucide="shopping-bag" class="w-5 h-5 text-gray-700"></i>
+                            <span id="cart-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold cart-badge-pulse hidden">0</span>
+                        </button>
+                        <div class="relative group">
+                            <button class="flex items-center space-x-2 hover:bg-gray-100 rounded-full px-3 py-2 transition-colors">
+                                <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold" id="user-avatar">U</div>
+                                <span class="font-medium text-gray-700 hidden lg:block" id="user-name">User</span>
+                                <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500"></i>
+                            </button>
+                            <div class="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                                <a href="#" onclick="app.navigate('orders')" class="block px-4 py-3 hover:bg-gray-50 rounded-t-xl text-sm font-medium">My Orders</a>
+                                <a href="#" onclick="app.navigate('profile')" class="block px-4 py-3 hover:bg-gray-50 text-sm font-medium">Profile</a>
+                                <button onclick="app.signOut()" class="block w-full text-left px-4 py-3 hover:bg-gray-50 rounded-b-xl text-red-600 text-sm font-medium">Sign Out</button>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <button class="md:hidden p-2 hover:bg-gray-100 rounded-full transition-colors" onclick="app.toggleMobileMenu()">
                         <i data-lucide="menu" class="w-5 h-5 text-gray-700"></i>
                     </button>
@@ -204,7 +72,7 @@
             </div>
         </div>
 
-        <!-- Search Bar (Hidden by default) -->
+        <!-- Search Bar -->
         <div id="search-bar" class="hidden absolute top-full left-0 w-full bg-white border-b border-gray-200 p-4 shadow-lg">
             <div class="max-w-3xl mx-auto relative">
                 <i data-lucide="search" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
@@ -222,11 +90,14 @@
             <button class="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full" onclick="app.toggleMobileMenu()">
                 <i data-lucide="x" class="w-6 h-6"></i>
             </button>
-            <div class="mt-12 space-y-4">
+            <div class="mt-12 space-y-4" id="mobile-menu-items">
                 <button onclick="app.navigate('home'); app.toggleMobileMenu()" class="block w-full text-left py-3 text-lg font-medium text-gray-800 hover:text-green-600">Home</button>
                 <button onclick="app.scrollToProducts(); app.toggleMobileMenu()" class="block w-full text-left py-3 text-lg font-medium text-gray-800 hover:text-green-600">Shop</button>
                 <button onclick="app.navigate('about'); app.toggleMobileMenu()" class="block w-full text-left py-3 text-lg font-medium text-gray-800 hover:text-green-600">About</button>
                 <button onclick="app.navigate('contact'); app.toggleMobileMenu()" class="block w-full text-left py-3 text-lg font-medium text-gray-800 hover:text-green-600">Contact</button>
+                <div id="mobile-auth-section">
+                    <button onclick="app.toggleAuth(); app.toggleMobileMenu()" class="block w-full text-left py-3 text-lg font-medium text-green-600 hover:text-green-700">Sign In / Sign Up</button>
+                </div>
             </div>
         </div>
     </div>
@@ -245,7 +116,6 @@
         </div>
 
         <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-4">
-            <!-- Cart items injected here -->
             <div class="text-center py-12 text-gray-400">
                 <i data-lucide="shopping-bag" class="w-16 h-16 mx-auto mb-4 opacity-30"></i>
                 <p>Your cart is empty</p>
@@ -277,6 +147,63 @@
         </div>
     </div>
 
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="app.closeAuth()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-8 pointer-events-auto animate-fade-in">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold brand-font" id="auth-title">Sign In</h2>
+                    <button onclick="app.closeAuth()" class="p-2 hover:bg-gray-100 rounded-full">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                
+                <!-- Sign In Form -->
+                <form id="signin-form" onsubmit="app.handleSignIn(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" name="email" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <input type="password" name="password" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
+                        Sign In
+                    </button>
+                    <p class="text-center text-sm text-gray-600">
+                        Don't have an account? 
+                        <button type="button" onclick="app.toggleAuthMode('signup')" class="text-green-600 font-medium">Sign Up</button>
+                    </p>
+                </form>
+
+                <!-- Sign Up Form -->
+                <form id="signup-form" onsubmit="app.handleSignUp(event)" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                        <input type="text" name="full_name" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" name="email" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <input type="password" name="password" required minlength="6" class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
+                        Create Account
+                    </button>
+                    <p class="text-center text-sm text-gray-600">
+                        Already have an account? 
+                        <button type="button" onclick="app.toggleAuthMode('signin')" class="text-green-600 font-medium">Sign In</button>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-6 right-6 z-50 bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center space-x-3 toast max-w-sm">
         <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
@@ -288,7 +215,7 @@
         </div>
     </div>
 
-    <!-- Main Content Area -->
+    <!-- Main Content -->
     <main id="main-content" class="pt-20">
         
         <!-- Hero Section -->
@@ -427,6 +354,71 @@
             </div>
         </section>
 
+        <!-- My Orders Section (Hidden by default) -->
+        <section id="orders-section" class="hidden py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4 brand-font">My Orders</h2>
+                <p class="text-gray-600">Track and manage your orders</p>
+            </div>
+            <div id="orders-list" class="space-y-6">
+                <!-- Orders injected via JS -->
+            </div>
+        </section>
+
+        <!-- Admin Section (Hidden by default) -->
+        <section id="admin-section" class="hidden py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-4xl font-bold text-gray-900 brand-font">Admin Dashboard</h2>
+                <button onclick="app.openAddProductModal()" class="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
+                    <i data-lucide="plus" class="w-4 h-4 inline mr-2"></i>Add Product
+                </button>
+            </div>
+            
+            <!-- Admin Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <p class="text-sm text-gray-500 mb-1">Total Orders</p>
+                    <p class="text-3xl font-bold text-gray-900" id="admin-total-orders">0</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <p class="text-sm text-gray-500 mb-1">Pending Orders</p>
+                    <p class="text-3xl font-bold text-orange-600" id="admin-pending-orders">0</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <p class="text-sm text-gray-500 mb-1">Today's Revenue</p>
+                    <p class="text-3xl font-bold text-green-600" id="admin-revenue">$0.00</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <p class="text-sm text-gray-500 mb-1">Total Products</p>
+                    <p class="text-3xl font-bold text-blue-600" id="admin-total-products">0</p>
+                </div>
+            </div>
+
+            <!-- All Orders Table -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="p-6 border-b border-gray-100">
+                    <h3 class="text-lg font-semibold">All Orders</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order #</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-orders-table" class="divide-y divide-gray-100">
+                            <!-- Orders injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
         <!-- Special Offer Banner -->
         <section class="py-20 bg-gradient-to-r from-orange-500 to-red-500 relative overflow-hidden">
             <div class="absolute inset-0 opacity-20">
@@ -534,7 +526,6 @@
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="app.closeCheckout()"></div>
         <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
             <div class="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl pointer-events-auto animate-fade-in">
-                <!-- Checkout Header -->
                 <div class="sticky top-0 bg-white border-b border-gray-100 p-6 flex justify-between items-center z-10">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-900 brand-font">Checkout</h2>
@@ -567,42 +558,42 @@
                         <div class="grid md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                                <input type="text" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="John">
+                                <input type="text" name="first_name" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="John">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                                <input type="text" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="Doe">
+                                <input type="text" name="last_name" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="Doe">
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                            <input type="email" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="john@example.com">
+                            <input type="email" name="email" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="john@example.com">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                            <input type="tel" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="+1 (555) 000-0000">
+                            <input type="tel" name="phone" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="+1 (555) 000-0000">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
-                            <input type="text" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="123 Fresh Street">
+                            <input type="text" name="address" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="123 Fresh Street">
                         </div>
                         <div class="grid md:grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
-                                <input type="text" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="New York">
+                                <input type="text" name="city" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="New York">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
-                                <input type="text" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="NY">
+                                <input type="text" name="state" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="NY">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
-                                <input type="text" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="10001">
+                                <input type="text" name="zip" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="10001">
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Instructions (Optional)</label>
-                            <textarea class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all h-24 resize-none" placeholder="Leave at door, ring bell, etc."></textarea>
+                            <textarea name="instructions" class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all h-24 resize-none" placeholder="Leave at door, ring bell, etc."></textarea>
                         </div>
                     </form>
                     <div class="mt-6 flex justify-end">
@@ -709,9 +700,7 @@
                 <div id="checkout-step-3" class="p-6 hidden">
                     <h3 class="text-lg font-semibold mb-4">Review Your Order</h3>
                     
-                    <div class="bg-gray-50 rounded-xl p-4 mb-6 max-h-48 overflow-y-auto" id="review-items">
-                        <!-- Items injected here -->
-                    </div>
+                    <div class="bg-gray-50 rounded-xl p-4 mb-6 max-h-48 overflow-y-auto" id="review-items"></div>
 
                     <div class="border-t border-gray-200 pt-4 mb-6">
                         <div class="flex justify-between mb-2 text-gray-600">
@@ -758,11 +747,11 @@
                         <i data-lucide="check" class="w-10 h-10 text-green-600"></i>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-2">Order Placed Successfully!</h3>
-                    <p class="text-gray-600 mb-6">Thank you for shopping with FRESHBOX. Your order #FB-2024-001 has been confirmed.</p>
+                    <p class="text-gray-600 mb-6">Thank you for shopping with FRESHBOX. Your order has been confirmed.</p>
                     <div class="bg-gray-50 rounded-xl p-6 mb-6 text-left max-w-md mx-auto">
                         <div class="flex justify-between mb-2">
                             <span class="text-gray-500">Order Number</span>
-                            <span class="font-semibold">#FB-2024-001</span>
+                            <span class="font-semibold" id="success-order-number">#FB-001</span>
                         </div>
                         <div class="flex justify-between mb-2">
                             <span class="text-gray-500">Delivery Date</span>
@@ -777,6 +766,65 @@
                         Continue Shopping
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Product Modal (Admin) -->
+    <div id="add-product-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="app.closeAddProductModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-8 pointer-events-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold brand-font">Add New Product</h2>
+                    <button onclick="app.closeAddProductModal()" class="p-2 hover:bg-gray-100 rounded-full">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <form id="add-product-form" onsubmit="app.handleAddProduct(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+                        <input type="text" name="name" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                            <select name="category" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                                <option value="fruits">Fruits</option>
+                                <option value="vegetables">Vegetables</option>
+                                <option value="bundles">Bundles</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+                            <input type="number" name="price" step="0.01" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                            <input type="text" name="unit" placeholder="each, lb, bunch" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Stock</label>
+                            <input type="number" name="stock" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                        <input type="url" name="image" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="organic" class="w-4 h-4 text-green-600 rounded">
+                            <span class="ml-2 text-sm text-gray-700">Organic</span>
+                        </label>
+                        <input type="text" name="badge" placeholder="Badge (optional)" class="flex-1 px-4 py-2 rounded-xl border border-gray-200 input-focus outline-none text-sm">
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
+                        Add Product
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -842,474 +890,6 @@
         </div>
     </footer>
 
-    <script>
-        // Application Logic
-        const app = {
-            state: {
-                cart: [],
-                products: [
-                    { id: 1, name: "Organic Bananas", category: "fruits", price: 2.99, unit: "bunch", image: "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400&h=400&fit=crop", organic: true, badge: "Best Seller" },
-                    { id: 2, name: "Fresh Avocados", category: "fruits", price: 4.49, unit: "each", image: "https://images.unsplash.com/photo-1523049673856-6485b5301054?w=400&h=400&fit=crop", organic: true, badge: null },
-                    { id: 3, name: "Red Apples", category: "fruits", price: 3.99, unit: "lb", image: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400&h=400&fit=crop", organic: false, badge: "Sale" },
-                    { id: 4, name: "Organic Carrots", category: "vegetables", price: 1.99, unit: "bunch", image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=400&h=400&fit=crop", organic: true, badge: null },
-                    { id: 5, name: "Broccoli Crown", category: "vegetables", price: 2.49, unit: "each", image: "https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?w=400&h=400&fit=crop", organic: false, badge: null },
-                    { id: 6, name: "Fresh Spinach", category: "vegetables", price: 3.49, unit: "bag", image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400&h=400&fit=crop", organic: true, badge: "Organic" },
-                    { id: 7, name: "Strawberries", category: "fruits", price: 5.99, unit: "box", image: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=400&h=400&fit=crop", organic: true, badge: "Fresh" },
-                    { id: 8, name: "Bell Peppers", category: "vegetables", price: 3.99, unit: "3 pack", image: "https://images.unsplash.com/photo-1563565375-f3fdf5e948ce?w=400&h=400&fit=crop", organic: false, badge: null },
-                    { id: 9, name: "Organic Blueberries", category: "fruits", price: 4.99, unit: "pint", image: "https://images.unsplash.com/photo-1498557850523-fd3d118b962e?w=400&h=400&fit=crop", organic: true, badge: "Superfood" },
-                    { id: 10, name: "Cherry Tomatoes", category: "vegetables", price: 3.29, unit: "pint", image: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400&h=400&fit=crop", organic: true, badge: null },
-                    { id: 11, name: "Sweet Potatoes", category: "vegetables", price: 1.49, unit: "lb", image: "https://images.unsplash.com/photo-1596097635121-14b63b7a0c19?w=400&h=400&fit=crop", organic: false, badge: null },
-                    { id: 12, name: "Mango Box", category: "bundles", price: 12.99, unit: "box", image: "https://images.unsplash.com/photo-1553279768-865429fa0078?w=400&h=400&fit=crop", organic: true, badge: "Bundle" }
-                ],
-                currentCategory: 'all',
-                checkoutStep: 1,
-                paymentMethod: 'card'
-            },
-
-            init() {
-                this.renderProducts();
-                this.startCountdown();
-                lucide.createIcons();
-                
-                // Navbar scroll effect
-                window.addEventListener('scroll', () => {
-                    const navbar = document.getElementById('navbar');
-                    if (window.scrollY > 50) {
-                        navbar.classList.add('shadow-md');
-                    } else {
-                        navbar.classList.remove('shadow-md');
-                    }
-                });
-            },
-
-            renderProducts() {
-                const grid = document.getElementById('products-grid');
-                const filtered = this.state.currentCategory === 'all' 
-                    ? this.state.products 
-                    : this.state.products.filter(p => {
-                        if (this.state.currentCategory === 'organic') return p.organic;
-                        return p.category === this.state.currentCategory;
-                    });
-
-                grid.innerHTML = filtered.map(product => `
-                    <div class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 group">
-                        <div class="relative overflow-hidden h-56">
-                            <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-                            ${product.badge ? `<span class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-green-700 text-xs font-bold px-3 py-1 rounded-full shadow-sm">${product.badge}</span>` : ''}
-                            ${product.organic ? `<span class="absolute top-3 right-3 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm flex items-center"><i data-lucide="leaf" class="w-3 h-3 mr-1"></i>ORGANIC</span>` : ''}
-                            <button onclick="app.quickAdd(${product.id})" class="absolute bottom-3 right-3 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-green-600 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all hover:bg-green-600 hover:text-white">
-                                <i data-lucide="plus" class="w-5 h-5"></i>
-                            </button>
-                        </div>
-                        <div class="p-5">
-                            <div class="flex justify-between items-start mb-2">
-                                <div>
-                                    <h3 class="font-semibold text-gray-900 text-lg">${product.name}</h3>
-                                    <p class="text-sm text-gray-500">${product.unit}</p>
-                                </div>
-                                <span class="text-lg font-bold text-green-600">$${product.price.toFixed(2)}</span>
-                            </div>
-                            <button onclick="app.addToCart(${product.id})" class="w-full mt-3 bg-gray-900 text-white py-3 rounded-xl font-medium hover:bg-green-600 transition-colors flex items-center justify-center group-btn">
-                                <i data-lucide="shopping-bag" class="w-4 h-4 mr-2"></i>
-                                Add to Cart
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-                
-                lucide.createIcons();
-            },
-
-            filterCategory(category) {
-                this.state.currentCategory = category;
-                document.querySelectorAll('.category-pill').forEach(pill => {
-                    if (pill.dataset.category === category) {
-                        pill.classList.add('active');
-                    } else {
-                        pill.classList.remove('active');
-                    }
-                });
-                this.renderProducts();
-            },
-
-            addToCart(productId) {
-                const product = this.state.products.find(p => p.id === productId);
-                const existing = this.state.cart.find(item => item.id === productId);
-                
-                if (existing) {
-                    existing.quantity++;
-                } else {
-                    this.state.cart.push({ ...product, quantity: 1 });
-                }
-                
-                this.updateCart();
-                this.showToast('Added to Cart', `${product.name} added successfully`);
-            },
-
-            quickAdd(productId) {
-                this.addToCart(productId);
-            },
-
-            removeFromCart(productId) {
-                this.state.cart = this.state.cart.filter(item => item.id !== productId);
-                this.updateCart();
-            },
-
-            updateQuantity(productId, delta) {
-                const item = this.state.cart.find(item => item.id === productId);
-                if (item) {
-                    item.quantity += delta;
-                    if (item.quantity <= 0) {
-                        this.removeFromCart(productId);
-                    } else {
-                        this.updateCart();
-                    }
-                }
-            },
-
-            updateCart() {
-                const cartItems = document.getElementById('cart-items');
-                const badge = document.getElementById('cart-badge');
-                const countHeader = document.getElementById('cart-count-header');
-                const subtotalEl = document.getElementById('cart-subtotal');
-                const totalEl = document.getElementById('cart-total');
-                const checkoutBtn = document.getElementById('checkout-btn');
-
-                const totalItems = this.state.cart.reduce((sum, item) => sum + item.quantity, 0);
-                const subtotal = this.state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-                if (totalItems === 0) {
-                    cartItems.innerHTML = `
-                        <div class="text-center py-12 text-gray-400">
-                            <i data-lucide="shopping-bag" class="w-16 h-16 mx-auto mb-4 opacity-30"></i>
-                            <p>Your cart is empty</p>
-                            <button onclick="app.toggleCart(); app.scrollToProducts()" class="mt-4 text-green-600 font-medium hover:underline">Start Shopping</button>
-                        </div>
-                    `;
-                    badge.classList.add('hidden');
-                    checkoutBtn.disabled = true;
-                } else {
-                    cartItems.innerHTML = this.state.cart.map(item => `
-                        <div class="flex items-center gap-4 bg-gray-50 p-4 rounded-xl animate-slide-in">
-                            <img src="${item.image}" alt="${item.name}" class="w-20 h-20 object-cover rounded-lg">
-                            <div class="flex-1">
-                                <h4 class="font-semibold text-gray-900">${item.name}</h4>
-                                <p class="text-sm text-gray-500">$${item.price.toFixed(2)} / ${item.unit}</p>
-                                <div class="flex items-center mt-2 space-x-2">
-                                    <button onclick="app.updateQuantity(${item.id}, -1)" class="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition-colors">
-                                        <i data-lucide="minus" class="w-3 h-3"></i>
-                                    </button>
-                                    <span class="w-8 text-center font-medium">${item.quantity}</span>
-                                    <button onclick="app.updateQuantity(${item.id}, 1)" class="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition-colors">
-                                        <i data-lucide="plus" class="w-3 h-3"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <p class="font-bold text-gray-900">$${(item.price * item.quantity).toFixed(2)}</p>
-                                <button onclick="app.removeFromCart(${item.id})" class="text-red-500 text-sm hover:text-red-700 mt-1">Remove</button>
-                            </div>
-                        </div>
-                    `).join('');
-                    badge.classList.remove('hidden');
-                    badge.textContent = totalItems;
-                    checkoutBtn.disabled = false;
-                }
-
-                countHeader.textContent = totalItems;
-                subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
-                totalEl.textContent = `$${subtotal.toFixed(2)}`;
-                
-                lucide.createIcons();
-            },
-
-            toggleCart() {
-                const sidebar = document.getElementById('cart-sidebar');
-                const overlay = document.getElementById('cart-overlay');
-                
-                if (sidebar.classList.contains('open')) {
-                    sidebar.classList.remove('open');
-                    setTimeout(() => overlay.classList.add('hidden'), 300);
-                } else {
-                    overlay.classList.remove('hidden');
-                    setTimeout(() => sidebar.classList.add('open'), 10);
-                }
-            },
-
-            checkout() {
-                if (this.state.cart.length === 0) return;
-                this.toggleCart();
-                document.getElementById('checkout-modal').classList.remove('hidden');
-                this.renderReviewItems();
-            },
-
-            closeCheckout() {
-                document.getElementById('checkout-modal').classList.add('hidden');
-                this.resetCheckout();
-            },
-
-            resetCheckout() {
-                this.state.checkoutStep = 1;
-                document.querySelectorAll('[id^="checkout-step-"]').forEach(el => el.classList.add('hidden'));
-                document.getElementById('checkout-step-1').classList.remove('hidden');
-                document.getElementById('checkout-success').classList.add('hidden');
-                
-                document.querySelectorAll('.progress-step').forEach((step, idx) => {
-                    if (idx === 0) {
-                        step.classList.add('active');
-                        step.classList.remove('completed');
-                    } else {
-                        step.classList.remove('active', 'completed');
-                    }
-                });
-                
-                document.getElementById('progress-bar-1').style.width = '0%';
-                document.getElementById('progress-bar-2').style.width = '0%';
-            },
-
-            nextCheckoutStep(step) {
-                // Validate current step
-                if (step === 2) {
-                    const form = document.getElementById('delivery-form');
-                    if (!form.checkValidity()) {
-                        form.reportValidity();
-                        return;
-                    }
-                }
-
-                document.getElementById(`checkout-step-${this.state.checkoutStep}`).classList.add('hidden');
-                document.getElementById(`checkout-step-${step}`).classList.remove('hidden');
-                
-                // Update progress
-                document.querySelector(`.progress-step[data-step="${this.state.checkoutStep}"]`).classList.remove('active');
-                document.querySelector(`.progress-step[data-step="${this.state.checkoutStep}"]`).classList.add('completed');
-                document.querySelector(`.progress-step[data-step="${step}"]`).classList.add('active');
-                
-                document.getElementById(`progress-bar-${this.state.checkoutStep}`).style.width = '100%';
-                
-                this.state.checkoutStep = step;
-                
-                if (step === 3) {
-                    this.renderReviewItems();
-                }
-            },
-
-            prevCheckoutStep(step) {
-                document.getElementById(`checkout-step-${this.state.checkoutStep}`).classList.add('hidden');
-                document.getElementById(`checkout-step-${step}`).classList.remove('hidden');
-                
-                document.querySelector(`.progress-step[data-step="${this.state.checkoutStep}"]`).classList.remove('active');
-                document.querySelector(`.progress-step[data-step="${step}"]`).classList.add('active');
-                document.querySelector(`.progress-step[data-step="${step}"]`).classList.remove('completed');
-                
-                document.getElementById(`progress-bar-${step}`).style.width = '0%';
-                
-                this.state.checkoutStep = step;
-            },
-
-            selectPayment(method) {
-                this.state.paymentMethod = method;
-                document.querySelectorAll('.payment-method').forEach(el => {
-                    el.classList.remove('selected');
-                    el.querySelector('.payment-check').classList.remove('bg-green-600', 'border-green-600');
-                    el.querySelector('.payment-check').classList.add('border-gray-300');
-                    el.querySelector('.payment-check').innerHTML = '';
-                });
-                
-                const selected = document.querySelector(`.payment-method[onclick="app.selectPayment('${method}')"]`);
-                selected.classList.add('selected');
-                selected.querySelector('.payment-check').classList.remove('border-gray-300');
-                selected.querySelector('.payment-check').classList.add('bg-green-600', 'border-green-600');
-                selected.querySelector('.payment-check').innerHTML = '<i data-lucide="check" class="w-4 h-4 text-white"></i>';
-                
-                lucide.createIcons();
-            },
-
-            formatCardNumber(input) {
-                let value = input.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
-                let matches = value.match(/\d{4,16}/g);
-                let match = matches && matches[0] || '';
-                let parts = [];
-                for (let i = 0, len = match.length; i < len; i += 4) {
-                    parts.push(match.substring(i, i + 4));
-                }
-                if (parts.length) {
-                    input.value = parts.join(' ');
-                } else {
-                    input.value = value;
-                }
-            },
-
-            formatExpiry(input) {
-                let value = input.value.replace(/\D/g, '');
-                if (value.length >= 2) {
-                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
-                }
-                input.value = value;
-            },
-
-            renderReviewItems() {
-                const container = document.getElementById('review-items');
-                const subtotal = this.state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                const tax = subtotal * 0.08;
-                const total = subtotal + tax;
-
-                container.innerHTML = this.state.cart.map(item => `
-                    <div class="flex justify-between items-center py-2 border-b border-gray-200 last:border-0">
-                        <div class="flex items-center">
-                            <span class="font-medium text-gray-900">${item.name}</span>
-                            <span class="text-gray-500 ml-2">x${item.quantity}</span>
-                        </div>
-                        <span class="font-semibold">$${(item.price * item.quantity).toFixed(2)}</span>
-                    </div>
-                `).join('');
-
-                document.getElementById('review-subtotal').textContent = `$${subtotal.toFixed(2)}`;
-                document.getElementById('review-tax').textContent = `$${tax.toFixed(2)}`;
-                document.getElementById('review-total').textContent = `$${total.toFixed(2)}`;
-                document.getElementById('success-total').textContent = `$${total.toFixed(2)}`;
-            },
-
-            placeOrder() {
-                const btn = document.getElementById('place-order-btn');
-                const btnText = document.getElementById('order-btn-text');
-                const loader = document.getElementById('order-loader');
-                
-                btn.disabled = true;
-                btnText.textContent = 'Processing...';
-                loader.classList.remove('hidden');
-                
-                setTimeout(() => {
-                    document.getElementById('checkout-step-3').classList.add('hidden');
-                    document.getElementById('checkout-success').classList.remove('hidden');
-                    btn.disabled = false;
-                    btnText.textContent = 'Place Order';
-                    loader.classList.add('hidden');
-                }, 2000);
-            },
-
-            clearCart() {
-                this.state.cart = [];
-                this.updateCart();
-            },
-
-            showToast(title, message) {
-                const toast = document.getElementById('toast');
-                document.getElementById('toast-title').textContent = title;
-                document.getElementById('toast-message').textContent = message;
-                
-                toast.classList.add('show');
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 3000);
-            },
-
-            toggleSearch() {
-                const searchBar = document.getElementById('search-bar');
-                searchBar.classList.toggle('hidden');
-                if (!searchBar.classList.contains('hidden')) {
-                    searchBar.querySelector('input').focus();
-                }
-            },
-
-            handleSearch(query) {
-                // Simple search implementation
-                const term = query.toLowerCase();
-                const filtered = this.state.products.filter(p => 
-                    p.name.toLowerCase().includes(term) || 
-                    p.category.toLowerCase().includes(term)
-                );
-                
-                const grid = document.getElementById('products-grid');
-                if (filtered.length === 0) {
-                    grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500">No products found matching "${query}"</div>`;
-                } else {
-                    grid.innerHTML = filtered.map(product => `
-                        <div class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 group">
-                            <div class="relative overflow-hidden h-56">
-                                <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-                                ${product.badge ? `<span class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-green-700 text-xs font-bold px-3 py-1 rounded-full shadow-sm">${product.badge}</span>` : ''}
-                                ${product.organic ? `<span class="absolute top-3 right-3 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm flex items-center"><i data-lucide="leaf" class="w-3 h-3 mr-1"></i>ORGANIC</span>` : ''}
-                            </div>
-                            <div class="p-5">
-                                <div class="flex justify-between items-start mb-2">
-                                    <div>
-                                        <h3 class="font-semibold text-gray-900 text-lg">${product.name}</h3>
-                                        <p class="text-sm text-gray-500">${product.unit}</p>
-                                    </div>
-                                    <span class="text-lg font-bold text-green-600">$${product.price.toFixed(2)}</span>
-                                </div>
-                                <button onclick="app.addToCart(${product.id})" class="w-full mt-3 bg-gray-900 text-white py-3 rounded-xl font-medium hover:bg-green-600 transition-colors flex items-center justify-center">
-                                    <i data-lucide="shopping-bag" class="w-4 h-4 mr-2"></i>
-                                    Add to Cart
-                                </button>
-                            </div>
-                        </div>
-                    `).join('');
-                }
-                lucide.createIcons();
-            },
-
-            toggleMobileMenu() {
-                const menu = document.getElementById('mobile-menu');
-                const panel = document.getElementById('mobile-menu-panel');
-                
-                if (menu.classList.contains('hidden')) {
-                    menu.classList.remove('hidden');
-                    setTimeout(() => {
-                        panel.classList.remove('translate-x-full');
-                    }, 10);
-                } else {
-                    panel.classList.add('translate-x-full');
-                    setTimeout(() => {
-                        menu.classList.add('hidden');
-                    }, 300);
-                }
-            },
-
-            scrollToProducts() {
-                document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
-            },
-
-            navigate(page) {
-                // Simple navigation simulation
-                if (page === 'home') {
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                } else {
-                    this.showToast('Coming Soon', `${page.charAt(0).toUpperCase() + page.slice(1)} page is under development`);
-                }
-            },
-
-            handleSubscribe(e) {
-                e.preventDefault();
-                this.showToast('Subscribed!', 'Thank you for joining our newsletter');
-                e.target.reset();
-            },
-
-            startCountdown() {
-                // Set countdown to 2 days from now
-                const end = new Date();
-                end.setDate(end.getDate() + 2);
-                
-                setInterval(() => {
-                    const now = new Date();
-                    const diff = end - now;
-                    
-                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                    
-                    document.getElementById('countdown-days').textContent = String(days).padStart(2, '0');
-                    document.getElementById('countdown-hours').textContent = String(hours).padStart(2, '0');
-                    document.getElementById('countdown-minutes').textContent = String(minutes).padStart(2, '0');
-                }, 1000);
-            }
-        };
-
-        // Initialize app
-        document.addEventListener('DOMContentLoaded', () => {
-            app.init();
-        });
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
