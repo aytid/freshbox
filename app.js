@@ -147,28 +147,32 @@ const app = {
         document.getElementById("mobile-user-menu").classList.add("hidden");
         location.reload();
     },
-    updateUserUI(user) {
-        const loggedOutMenu = document.getElementById('user-menu');
-        const loggedInMenu = document.getElementById('user-logged-in');
 
-        if (!loggedOutMenu || !loggedInMenu) return;
+    updateUserUI(user) {
+
+        const signin = document.getElementById("mobile-signin");
+        const menu = document.getElementById("mobile-user-menu");
+
+        const avatar = document.getElementById("mobile-avatar");
+        const username = document.getElementById("mobile-username");
 
         if (user) {
-            loggedOutMenu.classList.add('hidden');
-            loggedInMenu.classList.remove('hidden');
 
-            // Capitalize first letter of name
-            let userName = user.full_name || user.email?.split('@')[0] || 'User';
-            userName = userName.charAt(0).toUpperCase() + userName.slice(1);
+            signin?.classList.add("hidden");
+            menu?.classList.remove("hidden");
 
-            const userAvatar = document.getElementById('user-avatar');
-            const userNameEl = document.getElementById('user-name');
+            let name = user.full_name || user.email.split("@")[0];
 
-            if (userNameEl) userNameEl.textContent = userName;
-            if (userAvatar) userAvatar.textContent = userName.charAt(0); // Already uppercase
+            name = name.charAt(0).toUpperCase() + name.slice(1);
+
+            if (username) username.textContent = name;
+            if (avatar) avatar.textContent = name.charAt(0);
+
         } else {
-            loggedOutMenu.classList.remove('hidden');
-            loggedInMenu.classList.add('hidden');
+
+            signin?.classList.remove("hidden");
+            menu?.classList.add("hidden");
+
         }
     },
 

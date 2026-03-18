@@ -58,31 +58,50 @@
                 <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
             </button>
         </div>
+<div id="mobile-user-section" class="p-6 border-b border-gray-100">
 
-        <div id="mobile-user-section" class="p-6 border-b border-gray-100">
-            <div class="flex items-center space-x-4 mb-6">
-                <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-xl" id="mobile-avatar">U</div>
-                <div>
-                    <p class="font-bold text-gray-900 leading-none" id="mobile-username">User Name</p>
-                    <p class="text-xs text-green-600 mt-1">Verified Member</p>
-                </div>
-            </div>
+<!-- NOT LOGGED IN -->
+<div id="mobile-signin">
+    <button onclick="app.toggleAuth(); app.toggleMobileMenu()" 
+        class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold">
+        Sign In
+    </button>
+</div>
 
-            <nav class="space-y-1">
-                <button onclick="window.location.href='orders.html#profile'; app.toggleMobileMenu()" class="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-gray-50 text-gray-700 group">
-                    <i data-lucide="user" class="w-5 h-5 text-gray-400 group-hover:text-green-600"></i>
-                    <span class="font-medium">My Profile</span>
-                </button>
-                <button onclick="window.location.href='orders.html'; app.toggleMobileMenu()" class="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-gray-50 text-gray-700 group">
-                    <i data-lucide="package" class="w-5 h-5 text-gray-400 group-hover:text-green-600"></i>
-                    <span class="font-medium">My Orders</span>
-                </button>
-                <button onclick="app.signOut(); app.toggleMobileMenu()" class="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-red-50 text-red-600 group">
-                    <i data-lucide="log-out" class="w-5 h-5 text-red-400 group-hover:text-red-600"></i>
-                    <span class="font-medium">Sign Out</span>
-                </button>
-            </nav>
+<!-- LOGGED IN -->
+<div id="mobile-user-menu" class="hidden">
+
+    <div class="flex items-center space-x-4 mb-6">
+        <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-xl" id="mobile-avatar">U</div>
+        <div>
+            <p class="font-bold text-gray-900 leading-none" id="mobile-username">User Name</p>
+            <p class="text-xs text-green-600 mt-1">Verified Member</p>
         </div>
+    </div>
+
+    <nav class="space-y-1">
+        <button onclick="window.location.href='orders.html#profile'; app.toggleMobileMenu()" 
+            class="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-gray-50">
+            <i data-lucide="user" class="w-5 h-5"></i>
+            <span>My Profile</span>
+        </button>
+
+        <button onclick="window.location.href='orders.html'; app.toggleMobileMenu()" 
+            class="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-gray-50">
+            <i data-lucide="package" class="w-5 h-5"></i>
+            <span>My Orders</span>
+        </button>
+
+        <button onclick="app.signOut(); app.toggleMobileMenu()" 
+            class="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-red-50 text-red-600">
+            <i data-lucide="log-out" class="w-5 h-5"></i>
+            <span>Sign Out</span>
+        </button>
+    </nav>
+
+</div>
+
+</div>
     </div>
 </div>
 
