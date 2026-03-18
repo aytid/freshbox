@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreshBox - Orders & Profile</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .brand-font {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        .organic-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2316a34a' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .input-focus:focus {
+            border-color: #16a34a;
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+        }
+
+        .tab-active {
+    border-bottom: 2px solid #16a34a;
+    color: #16a34a;
+}
+
+.tab-inactive {
+    color: #6b7280;
+}
+
+.tab-inactive:hover {
+    color: #374151;
+}
+
+        /* .status-badge { @apply px-3 py-1 rounded-full text-xs font-semibold; }
+        .status-pending { @apply bg-yellow-100 text-yellow-800; }
+        .status-confirmed { @apply bg-blue-100 text-blue-800; }
+        .status-preparing { @apply bg-purple-100 text-purple-800; }
+        .status-out_for_delivery { @apply bg-orange-100 text-orange-800; }
+        .status-delivered { @apply bg-green-100 text-green-800; }
+        .status-cancelled { @apply bg-red-100 text-red-800; }
+        .order-card { transition: all 0.3s ease; }
+        .order-card:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .tab-active { @apply border-b-2 border-green-600 text-green-600; }
+        .tab-inactive { @apply text-gray-500 hover:text-gray-700; } */
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 organic-pattern min-h-screen">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass border-b border-gray-200/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center cursor-pointer" onclick="window.location.href='index.html'">
+                    <div
+                        class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mr-3 shadow-lg">
+                        <i data-lucide="leaf" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-gray-900 brand-font tracking-tight">FRESHBOX</span>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <button onclick="app.navigate('home')"
+                        class="text-gray-700 hover:text-green-600 font-medium transition-colors">Home</button>
+                    <div class="relative group">
+                        <button
+                            class="flex items-center space-x-2 hover:bg-gray-100 rounded-full px-3 py-2 transition-colors">
+                            <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold"
+                                id="user-avatar">U</div>
+                        </button>
+                        <div
+                            class="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                            <button onclick="app.signOut()"
+                                class="block w-full text-left px-4 py-3 hover:bg-gray-50 rounded-b-xl text-red-600 text-sm font-medium">Sign
+                                Out</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Page Tabs -->
+        <div class="flex space-x-8 border-b border-gray-200 mb-8">
+            <button onclick="app.showSection('orders')" id="tab-orders"
+                class="pb-4 text-lg font-medium tab-active transition-colors">
+                My Orders
+            </button>
+            <button onclick="app.showSection('profile')" id="tab-profile"
+                class="pb-4 text-lg font-medium tab-inactive transition-colors">
+                Profile Settings
+            </button>
+        </div>
+
+        <!-- Orders Section -->
+        <section id="orders-section" class="animate-fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 brand-font">Order History</h1>
+                    <p class="text-gray-600 mt-1">Track and manage your fresh deliveries</p>
+                </div>
+                <div class="flex space-x-3">
+                    <select id="order-filter" onchange="app.filterOrders(this.value)"
+                        class="px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-green-500">
+                        <option value="all">All Orders</option>
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="preparing">Preparing</option>
+                        <option value="out_for_delivery">Out for Delivery</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Orders List -->
+            <div id="orders-list" class="space-y-4">
+                <div class="text-center py-12">
+                    <div class="skeleton w-16 h-16 rounded-full mx-auto mb-4"></div>
+                    <div class="skeleton w-48 h-4 rounded mx-auto mb-2"></div>
+                    <div class="skeleton w-32 h-4 rounded mx-auto"></div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="orders-empty" class="hidden text-center py-16">
+                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="package" class="w-12 h-12 text-gray-400"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">No orders yet</h3>
+                <p class="text-gray-500 mb-6">Start shopping to see your orders here</p>
+                <button onclick="window.location.href='index.html'"
+                    class="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
+                    Start Shopping
+                </button>
+            </div>
+        </section>
+
+        <!-- Profile Section -->
+        <section id="profile-section" class="hidden animate-fade-in">
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Profile Sidebar -->
+                <div class="md:col-span-1">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center">
+                        <div class="relative inline-block mb-4">
+                            <div class="w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center text-white text-3xl font-bold mx-auto"
+                                id="profile-avatar">
+                                U
+                            </div>
+                            <button onclick="document.getElementById('avatar-input').click()"
+                                class="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center text-gray-600 hover:text-green-600 border border-gray-200">
+                                <i data-lucide="camera" class="w-4 h-4"></i>
+                            </button>
+                            <input type="file" id="avatar-input" class="hidden" accept="image/*"
+                                onchange="app.handleAvatarUpload(this)">
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-900" id="profile-name">User Name</h2>
+                        <p class="text-gray-500 text-sm" id="profile-email">user@example.com</p>
+                        <div class="mt-4 pt-4 border-t border-gray-100">
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-gray-500">Total Orders</span>
+                                <span class="font-semibold text-gray-900" id="profile-order-count">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Member Since</span>
+                                <span class="font-semibold text-gray-900" id="profile-member-since">2024</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Links -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mt-6">
+                        <h3 class="font-semibold text-gray-900 mb-4">Quick Links</h3>
+                        <nav class="space-y-2">
+                            <button onclick="app.scrollToSection('personal-info')"
+                                class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700 flex items-center">
+                                <i data-lucide="user" class="w-4 h-4 mr-3"></i> Personal Info
+                            </button>
+                            <button onclick="app.scrollToSection('addresses')"
+                                class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700 flex items-center">
+                                <i data-lucide="map-pin" class="w-4 h-4 mr-3"></i> Addresses
+                            </button>
+                            <button onclick="app.scrollToSection('security')"
+                                class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700 flex items-center">
+                                <i data-lucide="shield" class="w-4 h-4 mr-3"></i> Security
+                            </button>
+                            <button onclick="app.scrollToSection('notifications')"
+                                class="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700 flex items-center">
+                                <i data-lucide="bell" class="w-4 h-4 mr-3"></i> Notifications
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Profile Forms -->
+                <div class="md:col-span-2 space-y-6">
+                    <!-- Personal Information -->
+                    <div id="personal-info" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900">Personal Information</h3>
+                            <button onclick="app.toggleEdit('personal')" id="edit-personal-btn"
+                                class="text-green-600 hover:text-green-700 font-medium text-sm">Edit</button>
+                        </div>
+                        <form id="personal-form" onsubmit="app.saveProfile(event)" class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                <input type="text" name="full_name" id="input-full_name" disabled
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none bg-gray-50 disabled:cursor-not-allowed">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                <input type="email" name="email" id="input-email" disabled
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none bg-gray-50 disabled:cursor-not-allowed">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                <input type="tel" name="phone" id="input-phone" disabled
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none bg-gray-50 disabled:cursor-not-allowed">
+                            </div>
+                            <div class="md:col-span-2 flex justify-end space-x-3 hidden" id="personal-actions">
+                                <button type="button" onclick="app.cancelEdit('personal')"
+                                    class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium">Cancel</button>
+                                <button type="submit"
+                                    class="px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors">Save
+                                    Changes</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Addresses -->
+                    <div id="addresses" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900">Delivery Addresses</h3>
+                            <button onclick="app.openAddressModal()"
+                                class="text-green-600 hover:text-green-700 font-medium text-sm flex items-center">
+                                <i data-lucide="plus" class="w-4 h-4 mr-1"></i> Add New
+                            </button>
+                        </div>
+                        <div id="addresses-list" class="space-y-4">
+                            <div class="skeleton w-full h-24 rounded-xl"></div>
+                        </div>
+                    </div>
+
+                    <!-- Security -->
+                    <div id="security" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-6">Security Settings</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
+                                <div>
+                                    <p class="font-medium text-gray-900">Change Password</p>
+                                    <p class="text-sm text-gray-500">Update your password regularly for security</p>
+                                </div>
+                                <button onclick="app.openPasswordModal()"
+                                    class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">Change</button>
+                            </div>
+                            <!-- <div class="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
+                                <div>
+                                    <p class="font-medium text-gray-900">Two-Factor Authentication</p>
+                                    <p class="text-sm text-gray-500">Add an extra layer of security</p>
+                                </div>
+                                <button class="px-4 py-2 bg-gray-200 text-gray-400 rounded-lg cursor-not-allowed"
+                                    disabled>Coming Soon</button>
+                            </div> -->
+                        </div>
+                    </div>
+
+                    <!-- Notifications -->
+                    <!-- <div id="notifications" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-6">Notification Preferences</h3>
+                        <div class="space-y-4">
+                            <label class="flex items-center justify-between p-4 bg-gray-50 rounded-xl cursor-pointer">
+                                <div>
+                                    <p class="font-medium text-gray-900">Order Updates</p>
+                                    <p class="text-sm text-gray-500">Get notified about your order status</p>
+                                </div>
+                                <input type="checkbox" checked
+                                    class="w-5 h-5 text-green-600 rounded focus:ring-green-500">
+                            </label>
+                            <label class="flex items-center justify-between p-4 bg-gray-50 rounded-xl cursor-pointer">
+                                <div>
+                                    <p class="font-medium text-gray-900">Promotional Emails</p>
+                                    <p class="text-sm text-gray-500">Receive offers and discounts</p>
+                                </div>
+                                <input type="checkbox" class="w-5 h-5 text-green-600 rounded focus:ring-green-500">
+                            </label>
+                            <label class="flex items-center justify-between p-4 bg-gray-50 rounded-xl cursor-pointer">
+                                <div>
+                                    <p class="font-medium text-gray-900">Delivery Notifications</p>
+                                    <p class="text-sm text-gray-500">SMS alerts for delivery updates</p>
+                                </div>
+                                <input type="checkbox" checked
+                                    class="w-5 h-5 text-green-600 rounded focus:ring-green-500">
+                            </label>
+                        </div>
+                    </div> -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Order Detail Modal -->
+    <div id="order-detail-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="app.closeOrderDetail()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div
+                class="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl pointer-events-auto animate-fade-in">
+                <div class="sticky top-0 bg-white border-b border-gray-100 p-6 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 brand-font" id="modal-order-number">Order #FB-001
+                        </h2>
+                        <p class="text-sm text-gray-500" id="modal-order-date">Placed on Jan 1, 2024</p>
+                    </div>
+                    <button onclick="app.closeOrderDetail()" class="p-2 hover:bg-gray-100 rounded-full">
+                        <i data-lucide="x" class="w-6 h-6 text-gray-600"></i>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <!-- Status Timeline -->
+                    <div class="mb-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-sm font-medium text-gray-500">Order Status</span>
+                            <span id="modal-order-status" class="status-badge status-pending">Pending</span>
+                        </div>
+                        <div class="relative">
+                            <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                            <div id="order-timeline" class="space-y-6">
+                                <!-- Timeline items injected here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Items -->
+                    <div class="mb-8">
+                        <h3 class="font-semibold text-gray-900 mb-4">Items Ordered</h3>
+                        <div id="modal-order-items" class="space-y-3">
+                            <!-- Items injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Delivery Info -->
+                    <div class="bg-gray-50 rounded-xl p-4 mb-6">
+                        <h3 class="font-semibold text-gray-900 mb-3">Delivery Information</h3>
+                        <div class="grid md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <p class="text-gray-500">Address</p>
+                                <p class="font-medium text-gray-900" id="modal-address">123 Fresh Street</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Phone</p>
+                                <p class="font-medium text-gray-900" id="modal-phone">+1 555-0000</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">City</p>
+                                <p class="font-medium text-gray-900" id="modal-city">New York, NY 10001</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Instructions</p>
+                                <p class="font-medium text-gray-900" id="modal-instructions">Leave at door</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Summary -->
+                    <div class="border-t border-gray-200 pt-4">
+                        <div class="flex justify-between mb-2 text-gray-600">
+                            <span>Subtotal</span>
+                            <span id="modal-subtotal">$0.00</span>
+                        </div>
+                        <div class="flex justify-between mb-2 text-gray-600">
+                            <span>Tax (8%)</span>
+                            <span id="modal-tax">$0.00</span>
+                        </div>
+                        <div class="flex justify-between mb-2 text-gray-600">
+                            <span>Delivery</span>
+                            <span class="text-green-600">Free</span>
+                        </div>
+                        <div class="flex justify-between text-xl font-bold text-gray-900 pt-2 border-t border-gray-200">
+                            <span>Total</span>
+                            <span id="modal-total" class="text-green-600">$0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="mt-6 flex space-x-3" id="modal-actions">
+                        <button onclick="app.reorderItems()"
+                            class="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
+                            Reorder Items
+                        </button>
+                        <button onclick="app.downloadInvoice()"
+                            class="flex-1 border border-gray-300 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+                            Download Invoice
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Address Modal -->
+    <div id="address-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="app.closeAddressModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6 pointer-events-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">Add New Address</h3>
+                    <button onclick="app.closeAddressModal()" class="p-2 hover:bg-gray-100 rounded-full">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <form onsubmit="app.saveAddress(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
+                        <input type="text" name="address" required
+                            class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                            <input type="text" name="city" required
+                                class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
+                            <input type="text" name="state" required
+                                class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
+                            <input type="text" name="zip" required
+                                class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Label (Optional)</label>
+                            <input type="text" name="label" placeholder="Home, Work, etc."
+                                class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                        </div>
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
+                        Save Address
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div id="password-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="app.closePasswordModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 pointer-events-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">Change Password</h3>
+                    <button onclick="app.closePasswordModal()" class="p-2 hover:bg-gray-100 rounded-full">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <form onsubmit="app.changePassword(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                        <input type="password" name="current_password" required
+                            class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                        <input type="password" name="new_password" required minlength="6"
+                            class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                        <input type="password" name="confirm_password" required
+                            class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
+                        Update Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast"
+        class="fixed bottom-6 right-6 z-50 bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center space-x-3 transform translate-y-20 opacity-0 transition-all duration-300">
+        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <i data-lucide="check" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+            <p class="font-semibold" id="toast-title">Success</p>
+            <p class="text-sm text-gray-300" id="toast-message">Operation completed</p>
+        </div>
+    </div>
+
+    <script>
+        const app = {
+            state: {
+                user: null,
+                orders: [],
+                filteredOrders: [],
+                profile: null,
+                currentOrder: null
+            },
+
+            supabaseUrl: 'https://vsidzmaeivmyzobswesi.supabase.co',
+            supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzaWR6bWFlaXZteXpvYnN3ZXNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTI4MzIsImV4cCI6MjA4OTMyODgzMn0.D5tzSifOHyHFbDF_xwjm7O3dFEJKwMrZ63rIgbF-9vw',
+            supabase: null,
+
+            async init() {
+                this.supabase = supabase.createClient(this.supabaseUrl, this.supabaseKey);
+                await this.checkUser();
+                lucide.createIcons();
+            },
+            async checkUser() {
+
+                const user = JSON.parse(localStorage.getItem("user"));
+
+                if (!user) {
+                    window.location.href = "index.html";
+                    return;
+                }
+
+                this.state.user = user;
+
+                this.updateUserUI(user);
+
+                await this.loadProfile();
+                await this.loadOrders();
+            },
+
+            updateUserUI(user) {
+                const avatar = document.getElementById('user-avatar');
+                const profileAvatar = document.getElementById('profile-avatar');
+
+                const name = user.full_name || user.email?.split('@')[0] || 'User';
+                const initial = name[0].toUpperCase();
+
+                if (avatar) avatar.textContent = initial;
+                if (profileAvatar) profileAvatar.textContent = initial;
+            },
+            async loadProfile() {
+                const { data: profile, error } = await this.supabase
+                    .from('users')
+                    .select('*')
+                    .eq('id', this.state.user.id)
+                    .single();
+
+                if (error || !profile) {
+                    // Create profile if doesn't exist using upsert
+                    const { data: newProfile, error: upsertError } = await this.supabase
+                        .from('users')
+                        .upsert({
+                            id: this.state.user.id,
+                            email: this.state.user.email,
+                            full_name: this.state.user.full_name || ''
+                        })
+                        .select()
+                        .single();
+
+                    if (upsertError) {
+                        console.error('Profile creation error:', upsertError);
+                        this.showToast('Error', 'Failed to create user profile');
+                        return;
+                    }
+
+                    this.state.profile = newProfile;
+                } else {
+                    this.state.profile = profile;
+                }
+
+                this.renderProfile();
+            },
+            renderProfile() {
+                const profile = this.state.profile;
+                const user = this.state.user;
+
+                document.getElementById('profile-name').textContent = profile?.full_name || user.email?.split('@')[0] || 'User';
+                document.getElementById('profile-email').textContent = user.email;
+                document.getElementById('profile-member-since').textContent = new Date(user.created_at).getFullYear();
+
+                // Fill form
+                document.getElementById('input-full_name').value = profile?.full_name || '';
+                document.getElementById('input-email').value = user.email;
+                document.getElementById('input-phone').value = profile?.phone || '';
+
+                // Render addresses
+                this.renderAddresses();
+            },
+
+            renderAddresses() {
+                const container = document.getElementById('addresses-list');
+                const profile = this.state.profile;
+
+                if (!profile?.address) {
+                    container.innerHTML = `
+                        <div class="text-center py-8 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                            <i data-lucide="map-pin" class="w-8 h-8 text-gray-400 mx-auto mb-2"></i>
+                            <p class="text-gray-500 text-sm">No addresses saved yet</p>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div class="border border-gray-200 rounded-xl p-4 relative group hover:border-green-500 transition-colors">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="inline-block px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded mb-2">Primary</span>
+                                <p class="font-medium text-gray-900">${profile.address}</p>
+                                <p class="text-gray-500 text-sm">${profile.city}, ${profile.state} ${profile.zip_code}</p>
+                            </div>
+                            <button onclick="app.editAddress()" class="text-gray-400 hover:text-green-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i data-lucide="edit-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                lucide.createIcons();
+            },
+
+            async loadOrders() {
+                const { data: orders, error } = await this.supabase
+                    .from('orders')
+                    .select(`
+                        *,
+                        order_items (
+                            *,
+                            products (name, image)
+                        )
+                    `)
+                    .eq('user_id', this.state.user.id)
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    this.showToast('Error', 'Failed to load orders');
+                    return;
+                }
+
+                this.state.orders = orders || [];
+                this.state.filteredOrders = orders || [];
+                document.getElementById('profile-order-count').textContent = orders?.length || 0;
+                this.renderOrders();
+            },
+
+            renderOrders() {
+                const container = document.getElementById('orders-list');
+                const emptyState = document.getElementById('orders-empty');
+
+                if (this.state.filteredOrders.length === 0) {
+                    container.innerHTML = '';
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+
+                emptyState.classList.add('hidden');
+
+                container.innerHTML = this.state.filteredOrders.map(order => {
+                    const statusClass = `status-${order.status}`;
+                    const date = new Date(order.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric', month: 'short', day: 'numeric'
+                    });
+                    const itemCount = order.order_items?.length || 0;
+                    const totalItems = order.order_items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+
+                    return `
+                        <div class="order-card bg-white rounded-2xl shadow-sm border border-gray-100 p-6 cursor-pointer" onclick="app.showOrderDetail(${order.id})">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div class="flex items-start space-x-4">
+                                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <i data-lucide="package" class="w-6 h-6 text-green-600"></i>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-3 mb-1">
+                                            <h3 class="font-bold text-gray-900">Order #FB-${String(order.id).padStart(3, '0')}</h3>
+                                            <span class="status-badge ${statusClass}">${order.status.replace(/_/g, ' ').toUpperCase()}</span>
+                                        </div>
+                                        <p class="text-sm text-gray-500">Placed on ${date} • ${totalItems} items</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between md:text-right gap-4">
+                                    <div>
+                                        <p class="text-2xl font-bold text-gray-900">$${parseFloat(order.total_amount).toFixed(2)}</p>
+                                        <p class="text-sm text-gray-500">${order.payment_method}</p>
+                                    </div>
+                                    <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                                </div>
+                            </div>
+                            ${order.status === 'out_for_delivery' ? `
+                                <div class="mt-4 pt-4 border-t border-gray-100">
+                                    <div class="flex items-center text-sm text-orange-600">
+                                        <i data-lucide="truck" class="w-4 h-4 mr-2 animate-pulse"></i>
+                                        Out for delivery - Arriving today!
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                lucide.createIcons();
+            },
+
+            filterOrders(status) {
+                if (status === 'all') {
+                    this.state.filteredOrders = this.state.orders;
+                } else {
+                    this.state.filteredOrders = this.state.orders.filter(o => o.status === status);
+                }
+                this.renderOrders();
+            },
+
+            showOrderDetail(orderId) {
+                const order = this.state.orders.find(o => o.id === orderId);
+                if (!order) return;
+
+                this.state.currentOrder = order;
+
+                document.getElementById('modal-order-number').textContent = `Order #FB-${String(order.id).padStart(3, '0')}`;
+                document.getElementById('modal-order-date').textContent = `Placed on ${new Date(order.created_at).toLocaleDateString('en-US', {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                })}`;
+
+                const statusEl = document.getElementById('modal-order-status');
+                statusEl.className = `status-badge status-${order.status}`;
+                statusEl.textContent = order.status.replace(/_/g, ' ').toUpperCase();
+
+                // Timeline
+                const timeline = document.getElementById('order-timeline');
+                const statuses = ['pending', 'confirmed', 'preparing', 'out_for_delivery', 'delivered'];
+                const currentIndex = statuses.indexOf(order.status);
+
+                timeline.innerHTML = statuses.map((status, idx) => {
+                    const isCompleted = idx <= currentIndex;
+                    const isCurrent = idx === currentIndex;
+                    const icon = isCompleted ? 'check-circle' : 'circle';
+                    const colorClass = isCompleted ? 'text-green-600' : 'text-gray-300';
+                    const bgClass = isCompleted ? 'bg-green-600' : 'bg-gray-200';
+
+                    return `
+                        <div class="relative flex items-center">
+                            <div class="absolute left-0 w-8 h-8 rounded-full ${bgClass} flex items-center justify-center z-10">
+                                <i data-lucide="${icon}" class="w-4 h-4 ${isCompleted ? 'text-white' : 'text-gray-400'}"></i>
+                            </div>
+                            <div class="ml-12">
+                                <p class="font-medium ${isCurrent ? 'text-gray-900' : 'text-gray-500'} capitalize">
+                                    ${status.replace(/_/g, ' ')}
+                                </p>
+                                ${isCurrent ? `<p class="text-sm text-gray-500">${new Date().toLocaleTimeString()}</p>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // Items
+                const itemsContainer = document.getElementById('modal-order-items');
+                itemsContainer.innerHTML = order.order_items?.map(item => `
+                    <div class="flex items-center gap-4 bg-gray-50 p-3 rounded-xl">
+                        <img src="${item.products?.image || 'https://via.placeholder.com/60'}" class="w-16 h-16 object-cover rounded-lg">
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-900">${item.name_at_time}</h4>
+                            <p class="text-sm text-gray-500">Qty: ${item.quantity} × $${parseFloat(item.price_at_time).toFixed(2)}</p>
+                        </div>
+                        <p class="font-semibold text-gray-900">$${(item.price_at_time * item.quantity).toFixed(2)}</p>
+                    </div>
+                `).join('') || '<p class="text-gray-500">No items found</p>';
+
+                // Delivery info
+                document.getElementById('modal-address').textContent = order.delivery_address;
+                document.getElementById('modal-phone').textContent = order.phone;
+                document.getElementById('modal-city').textContent = `${order.delivery_city}, ${order.delivery_state} ${order.delivery_zip}`;
+                document.getElementById('modal-instructions').textContent = order.delivery_instructions || 'No instructions';
+
+                // Totals
+                const subtotal = order.order_items?.reduce((sum, item) => sum + (item.price_at_time * item.quantity), 0) || 0;
+                const tax = subtotal * 0.08;
+                document.getElementById('modal-subtotal').textContent = `$${subtotal.toFixed(2)}`;
+                document.getElementById('modal-tax').textContent = `$${tax.toFixed(2)}`;
+                document.getElementById('modal-total').textContent = `$${parseFloat(order.total_amount).toFixed(2)}`;
+
+                // Show/hide actions based on status
+                const actions = document.getElementById('modal-actions');
+                if (order.status === 'cancelled' || order.status === 'delivered') {
+                    actions.innerHTML = `
+                        <button onclick="app.reorderItems()" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
+                            Reorder Items
+                        </button>
+                    `;
+                }
+
+                document.getElementById('order-detail-modal').classList.remove('hidden');
+                lucide.createIcons();
+            },
+
+            closeOrderDetail() {
+                document.getElementById('order-detail-modal').classList.add('hidden');
+            },
+
+            async reorderItems() {
+                if (!this.state.currentOrder) return;
+
+                // Add items to cart
+                for (const item of this.state.currentOrder.order_items) {
+                    // Check if product still exists and has stock
+                    const { data: product } = await this.supabase
+                        .from('products')
+                        .select('stock')
+                        .eq('id', item.product_id)
+                        .single();
+
+                    if (product && product.stock >= item.quantity) {
+                        await this.addToCart(item.product_id, item.quantity);
+                    }
+                }
+
+                this.closeOrderDetail();
+                this.showToast('Added to Cart', 'Items from this order have been added to your cart');
+                setTimeout(() => window.location.href = 'index.html?cart=open', 500);
+            },
+
+            async addToCart(productId, quantity = 1) {
+                // Implementation depends on your cart logic - reuse from main app
+                const { data: cart } = await this.supabase
+                    .from('carts')
+                    .select('*')
+                    .eq('user_id', this.state.user.id)
+                    .maybeSingle();
+
+                if (cart) {
+                    const { data: existing } = await this.supabase
+                        .from('cart_items')
+                        .select('*')
+                        .eq('cart_id', cart.id)
+                        .eq('product_id', productId)
+                        .maybeSingle();
+
+                    if (existing) {
+                        await this.supabase
+                            .from('cart_items')
+                            .update({ quantity: existing.quantity + quantity })
+                            .eq('id', existing.id);
+                    } else {
+                        await this.supabase
+                            .from('cart_items')
+                            .insert({ cart_id: cart.id, product_id: productId, quantity });
+                    }
+                }
+            },
+
+            downloadInvoice() {
+                this.showToast('Coming Soon', 'Invoice download will be available shortly');
+            },
+
+            showSection(section) {
+                const ordersSection = document.getElementById('orders-section');
+                const profileSection = document.getElementById('profile-section');
+                const ordersTab = document.getElementById('tab-orders');
+                const profileTab = document.getElementById('tab-profile');
+
+                if (section === 'orders') {
+                    ordersSection.classList.remove('hidden');
+                    profileSection.classList.add('hidden');
+                    ordersTab.classList.add('tab-active');
+                    ordersTab.classList.remove('tab-inactive');
+                    profileTab.classList.remove('tab-active');
+                    profileTab.classList.add('tab-inactive');
+                    history.pushState(null, null, '#orders');
+                } else {
+                    ordersSection.classList.add('hidden');
+                    profileSection.classList.remove('hidden');
+                    profileTab.classList.add('tab-active');
+                    profileTab.classList.remove('tab-inactive');
+                    ordersTab.classList.remove('tab-active');
+                    ordersTab.classList.add('tab-inactive');
+                    history.pushState(null, null, '#profile');
+                }
+            },
+
+            toggleEdit(section) {
+                const inputs = document.querySelectorAll(`#${section}-form input`);
+                const actions = document.getElementById(`${section}-actions`);
+                const btn = document.getElementById(`edit-${section}-btn`);
+
+                inputs.forEach(input => {
+                    input.disabled = !input.disabled;
+                    if (!input.disabled) {
+                        input.classList.remove('bg-gray-50');
+                        input.classList.add('bg-white');
+                    } else {
+                        input.classList.add('bg-gray-50');
+                        input.classList.remove('bg-white');
+                    }
+                });
+
+                actions.classList.toggle('hidden');
+                btn.classList.toggle('hidden');
+            },
+
+            cancelEdit(section) {
+                this.toggleEdit(section);
+                this.renderProfile(); // Reset values
+            },
+
+            async saveProfile(e) {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+
+                const updates = {
+                    full_name: formData.get('full_name'),
+                    phone: formData.get('phone')
+                };
+
+                const { data, error } = await this.supabase
+                    .from('users')
+                    .update(updates)
+                    .eq('id', this.state.user.id)
+                    .select(); // Add this to return updated data
+
+                if (error) {
+                    console.error('Update error:', error);
+                    this.showToast('Error', 'Failed to update profile: ' + error.message);
+                    return;
+                }
+
+                // Update local state with new data
+                this.state.profile = { ...this.state.profile, ...updates };
+
+                // Re-disable inputs and hide save button
+                this.toggleEdit('personal');
+
+                // Update UI
+                this.renderProfile();
+
+                this.showToast('Success', 'Profile updated successfully');
+            },
+            openAddressModal() {
+                document.getElementById('address-modal').classList.remove('hidden');
+            },
+
+            closeAddressModal() {
+                document.getElementById('address-modal').classList.add('hidden');
+            },
+
+            async saveAddress(e) {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+
+                const updates = {
+                    address: formData.get('address'),
+                    city: formData.get('city'),
+                    state: formData.get('state'),
+                    zip_code: formData.get('zip')
+                };
+
+                const { error } = await this.supabase
+                    .from('users')
+                    .update(updates)
+                    .eq('id', this.state.user.id);
+
+                if (error) {
+                    this.showToast('Error', 'Failed to save address');
+                    return;
+                }
+
+                this.state.profile = { ...this.state.profile, ...updates };
+                this.closeAddressModal();
+                this.showToast('Success', 'Address saved successfully');
+                this.renderAddresses();
+            },
+
+            editAddress() {
+                this.openAddressModal();
+                // Pre-fill form
+                const profile = this.state.profile;
+                const form = document.querySelector('#address-modal form');
+                form.address.value = profile.address || '';
+                form.city.value = profile.city || '';
+                form.state.value = profile.state || '';
+                form.zip.value = profile.zip_code || '';
+            },
+
+            openPasswordModal() {
+                document.getElementById('password-modal').classList.remove('hidden');
+            },
+
+            closePasswordModal() {
+                document.getElementById('password-modal').classList.add('hidden');
+            },
+
+            async changePassword(e) {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const currentPassword = formData.get('current_password');
+                const newPassword = formData.get('new_password');
+                const confirmPassword = formData.get('confirm_password');
+
+                // Validation
+                if (newPassword !== confirmPassword) {
+                    this.showToast('Error', 'New passwords do not match');
+                    return;
+                }
+
+                if (newPassword.length < 6) {
+                    this.showToast('Error', 'Password must be at least 6 characters');
+                    return;
+                }
+
+                // Verify current password matches stored password
+                const { data: userData, error: fetchError } = await this.supabase
+                    .from('users')
+                    .select('password')
+                    .eq('id', this.state.user.id)
+                    .single();
+
+                if (fetchError) {
+                    this.showToast('Error', 'Failed to verify current password');
+                    return;
+                }
+
+                if (userData.password !== currentPassword) {
+                    this.showToast('Error', 'Current password is incorrect');
+                    return;
+                }
+
+                // Update password in users table
+                const { error: updateError } = await this.supabase
+                    .from('users')
+                    .update({ password: newPassword })
+                    .eq('id', this.state.user.id);
+
+                if (updateError) {
+                    this.showToast('Error', 'Failed to update password: ' + updateError.message);
+                    return;
+                }
+
+                this.closePasswordModal();
+                this.showToast('Success', 'Password updated successfully');
+                e.target.reset();
+            },
+            handleAvatarUpload(input) {
+                if (input.files && input.files[0]) {
+                    this.showToast('Uploading...', 'Avatar upload coming soon');
+                }
+            },
+
+            scrollToSection(id) {
+                document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+            },
+
+            navigate(page) {
+                if (page === 'home') {
+                    window.location.href = 'index.html';
+                } else if (page === 'orders' || page === 'profile') {
+                    this.showSection(page);
+                }
+            },
+
+            async signOut() {
+                localStorage.removeItem("user");
+                window.location.href = "index.html";
+            },
+
+            showToast(title, message) {
+                const toast = document.getElementById('toast');
+                document.getElementById('toast-title').textContent = title;
+                document.getElementById('toast-message').textContent = message;
+
+                toast.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => {
+                    toast.classList.add('translate-y-20', 'opacity-0');
+                }, 3000);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            app.init();
+
+            // Check URL hash for direct linking
+            if (window.location.hash === '#profile') {
+                setTimeout(() => app.showSection('profile'), 100);
+            }
+        });
+    </script>
+</body>
+
+</html>

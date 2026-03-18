@@ -3,1562 +3,533 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FRESHBOX Admin Console</title>
+    <title>FreshBox Admin Console</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Inter', sans-serif; }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        /* Animations */
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        @keyframes shimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
-        
-        .animate-slide-in { animation: slideIn 0.3s ease-out; }
-        .animate-fade-in { animation: fadeIn 0.3s ease-out; }
-        
-        /* Glass Effects */
-        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
-        .glass-dark { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); }
-        
-        /* Sidebar */
-        .sidebar-item { transition: all 0.2s; }
-        .sidebar-item:hover { background: rgba(255,255,255,0.1); }
-        .sidebar-item.active { background: rgba(255,255,255,0.15); border-left: 3px solid #22c55e; }
-        
-        /* Cards */
-        .metric-card { transition: all 0.3s; }
-        .metric-card:hover { transform: translateY(-2px); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); }
-        
-        /* Tables */
-        .table-row { transition: background 0.2s; }
-        .table-row:hover { background: #f8fafc; }
-        
-        /* Status Badges */
-        .status-badge { @apply px-2 py-1 rounded-full text-xs font-semibold; }
-        .status-delivered { @apply bg-green-100 text-green-700; }
-        .status-pending { @apply bg-yellow-100 text-yellow-700; }
-        .status-processing { @apply bg-blue-100 text-blue-700; }
-        .status-cancelled { @apply bg-red-100 text-red-700; }
-        
-        /* Loading Skeleton */
-        .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 1000px 100%; animation: shimmer 2s infinite linear; }
-        
-        /* Toggle Switch */
-        .toggle-checkbox:checked { right: 0; border-color: #22c55e; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #22c55e; }
-        
-        /* Dropdown */
-        .dropdown-menu { transform-origin: top right; transition: all 0.2s; }
-        .dropdown-menu.hidden { opacity: 0; transform: scale(0.95); pointer-events: none; }
-        .dropdown-menu:not(.hidden) { opacity: 1; transform: scale(1); pointer-events: auto; }
-        
-        /* Chart Container */
-        .chart-container { position: relative; height: 300px; width: 100%; }
-        
-        /* Calendar Grid */
-        .calendar-day { aspect-ratio: 1; }
-        .calendar-day:hover:not(.empty) { background: #f1f5f9; cursor: pointer; }
-        .calendar-day.selected { background: #22c55e; color: white; }
-        .calendar-day.today { border: 2px solid #22c55e; }
-        
-        /* Heatmap */
-        .heatmap-cell { transition: all 0.2s; }
-        .heatmap-cell:hover { transform: scale(1.1); z-index: 10; }
-    </style>
+    <link rel="stylesheet" href="admin.css">
 </head>
-<body class="bg-slate-50 text-slate-800">
-
-    <!-- Login Screen (shown initially) -->
+<body class="bg-gray-50 font-['Inter']">
+    <!-- Login Screen -->
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-green-600 to-emerald-800">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md animate-slide-in">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4">
             <div class="text-center mb-8">
                 <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <i data-lucide="leaf" class="w-8 h-8 text-green-600"></i>
+                    <i data-lucide="shield" class="w-8 h-8 text-green-600"></i>
                 </div>
-                <h1 class="text-2xl font-bold text-gray-900">FRESHBOX Admin</h1>
-                <p class="text-gray-500">Sign in to access your dashboard</p>
+                <h1 class="text-2xl font-bold text-gray-900">Admin Console</h1>
+                <p class="text-gray-500 mt-2">FreshBox Management System</p>
             </div>
-            <form onsubmit="app.login(event)" class="space-y-4">
+            <form id="admin-login-form" onsubmit="adminApp.login(event)" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input type="email" value="admin@freshbox.com" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all" placeholder="admin@freshbox.com">
+                    <input type="email" name="email" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <input type="password" value="password" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all" placeholder="••••••••">
+                    <input type="password" name="password" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all">
                 </div>
-                <div class="flex items-center justify-between text-sm">
-                    <label class="flex items-center">
-                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                        <span class="ml-2 text-gray-600">Remember me</span>
-                    </label>
-                    <a href="#" class="text-green-600 hover:underline">Forgot password?</a>
-                </div>
-                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors shadow-lg">
-                    Sign In
+                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center">
+                    <i data-lucide="log-in" class="w-5 h-5 mr-2"></i>Sign In
                 </button>
             </form>
+            <p class="text-center mt-4 text-sm text-gray-500">
+                <a href="index.html" class="text-green-600 hover:underline">← Back to Store</a>
+            </p>
         </div>
     </div>
 
     <!-- Main Admin Interface -->
     <div id="admin-interface" class="hidden">
+        <!-- Mobile Header -->
+        <header class="mobile-header lg:hidden bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-40">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <button onclick="adminApp.toggleMobileMenu()" class="p-2 hover:bg-gray-100 rounded-lg" aria-label="Toggle menu">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+                            <i data-lucide="leaf" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <span class="font-bold text-gray-900">FRESHBOX</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="adminApp.refreshData()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Refresh">
+                        <i data-lucide="refresh-cw" class="w-5 h-5 text-gray-600"></i>
+                    </button>
+                    <button onclick="adminApp.toggleNotifications()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors relative">
+                        <i data-lucide="bell" class="w-5 h-5 text-gray-600"></i>
+                        <span id="mobile-notification-badge" class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Sidebar Overlay for Mobile -->
+        <div id="sidebar-overlay" class="sidebar-overlay lg:hidden" onclick="adminApp.toggleMobileMenu()"></div>
         
         <!-- Sidebar -->
-        <aside class="fixed left-0 top-0 h-full w-64 bg-slate-900 text-white z-40 flex flex-col">
-            <div class="p-6 border-b border-slate-800">
+        <aside class="fixed left-0 top-0 h-full w-64 bg-gray-900 text-white z-40 overflow-y-auto transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+            <div class="p-6 border-b border-gray-800">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center">
                         <i data-lucide="leaf" class="w-6 h-6 text-white"></i>
                     </div>
                     <div>
                         <h1 class="font-bold text-lg">FRESHBOX</h1>
-                        <p class="text-xs text-slate-400">Admin Console</p>
+                        <p class="text-xs text-gray-400">Admin Console</p>
                     </div>
                 </div>
             </div>
 
-            <nav class="flex-1 overflow-y-auto py-4">
-                <div class="px-4 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Main</div>
-                <a href="#" onclick="app.navigate('dashboard')" class="sidebar-item active flex items-center px-6 py-3 text-sm font-medium" data-page="dashboard">
-                    <i data-lucide="layout-dashboard" class="w-5 h-5 mr-3"></i>
-                    Dashboard
-                </a>
-                <a href="#" onclick="app.navigate('orders')" class="sidebar-item flex items-center px-6 py-3 text-sm font-medium" data-page="orders">
-                    <i data-lucide="shopping-cart" class="w-5 h-5 mr-3"></i>
-                    Orders
-                    <span id="sidebar-order-badge" class="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">12</span>
-                </a>
-                <a href="#" onclick="app.navigate('products')" class="sidebar-item flex items-center px-6 py-3 text-sm font-medium" data-page="products">
-                    <i data-lucide="package" class="w-5 h-5 mr-3"></i>
-                    Products
-                </a>
-                <a href="#" onclick="app.navigate('customers')" class="sidebar-item flex items-center px-6 py-3 text-sm font-medium" data-page="customers">
-                    <i data-lucide="users" class="w-5 h-5 mr-3"></i>
-                    Customers
-                </a>
-                <a href="#" onclick="app.navigate('analytics')" class="sidebar-item flex items-center px-6 py-3 text-sm font-medium" data-page="analytics">
-                    <i data-lucide="bar-chart-3" class="w-5 h-5 mr-3"></i>
-                    Analytics
-                </a>
-
-                <div class="px-4 mt-6 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Management</div>
-                <a href="#" onclick="app.navigate('inventory')" class="sidebar-item flex items-center px-6 py-3 text-sm font-medium" data-page="inventory">
-                    <i data-lucide="warehouse" class="w-5 h-5 mr-3"></i>
-                    Inventory
-                </a>
-                <a href="#" onclick="app.navigate('shipping')" class="sidebar-item flex items-center px-6 py-3 text-sm font-medium" data-page="shipping">
-                    <i data-lucide="truck" class="w-5 h-5 mr-3"></i>
-                    Shipping
-                </a>
-                <a href="#" onclick="app.navigate('marketing')" class="sidebar-item flex items-center px-6 py-3 text-sm font-medium" data-page="marketing">
-                    <i data-lucide="megaphone" class="w-5 h-5 mr-3"></i>
-                    Marketing
-                </a>
-                <a href="#" onclick="app.navigate('reviews')" class="sidebar-item flex items-center px-6 py-3 text-sm font-medium" data-page="reviews">
-                    <i data-lucide="star" class="w-5 h-5 mr-3"></i>
-                    Reviews
-                </a>
+            <nav class="p-4 space-y-2">
+                <button onclick="adminApp.navigate('dashboard')" class="nav-item active w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-gray-800 transition-colors" data-page="dashboard">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span>Dashboard</span>
+                </button>
+                <button onclick="adminApp.navigate('orders')" class="nav-item w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-gray-800 transition-colors" data-page="orders">
+                    <i data-lucide="shopping-bag" class="w-5 h-5"></i><span>Orders</span>
+                    <span id="sidebar-pending-count" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full hidden">0</span>
+                </button>
+                <button onclick="adminApp.navigate('products')" class="nav-item w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-gray-800 transition-colors" data-page="products">
+                    <i data-lucide="package" class="w-5 h-5"></i><span>Products</span>
+                </button>
+                <button onclick="adminApp.navigate('inventory')" class="nav-item w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-gray-800 transition-colors" data-page="inventory">
+                    <i data-lucide="warehouse" class="w-5 h-5"></i><span>Inventory</span>
+                </button>
+                <button onclick="adminApp.navigate('customers')" class="nav-item w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-gray-800 transition-colors" data-page="customers">
+                    <i data-lucide="users" class="w-5 h-5"></i><span>Customers</span>
+                </button>
             </nav>
 
-            <div class="p-4 border-t border-slate-800">
-                <div class="flex items-center px-4 py-3 rounded-xl bg-slate-800/50">
-                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" alt="Admin" class="w-10 h-10 rounded-full object-cover">
-                    <div class="ml-3 flex-1">
-                        <p class="text-sm font-medium">Alex Johnson</p>
-                        <p class="text-xs text-slate-400">Store Manager</p>
+            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-800 bg-gray-900">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
+                        <span id="admin-avatar" class="font-bold">A</span>
                     </div>
-                    <button onclick="app.logout()" class="text-slate-400 hover:text-white transition-colors">
-                        <i data-lucide="log-out" class="w-5 h-5"></i>
-                    </button>
+                    <div class="flex-1 min-w-0">
+                        <p id="admin-name" class="font-medium text-sm truncate">Admin</p>
+                        <p id="admin-email" class="text-xs text-gray-400 truncate">admin@freshbox.com</p>
+                    </div>
                 </div>
+                <button onclick="adminApp.logout()" class="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors text-sm">
+                    <i data-lucide="log-out" class="w-4 h-4"></i><span>Logout</span>
+                </button>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="ml-64 min-h-screen">
-            
-            <!-- Top Header -->
-            <header class="sticky top-0 z-30 glass border-b border-slate-200 px-8 py-4 flex justify-between items-center">
-                <div class="flex items-center space-x-4">
-                    <h2 id="page-title" class="text-2xl font-bold text-slate-800">Dashboard</h2>
-                    <span id="live-indicator" class="flex items-center text-xs text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-200">
-                        <span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
-                        Live Updates
-                    </span>
+        <main class="lg:ml-64 min-h-screen pt-0 lg:pt-0">
+            <!-- Top Header (Desktop) -->
+            <header class="hidden lg:flex bg-white border-b border-gray-200 sticky top-0 z-30 justify-between items-center px-8 py-4">
+                <div>
+                    <h2 id="page-title" class="text-2xl font-bold text-gray-900">Dashboard</h2>
+                    <p id="page-subtitle" class="text-sm text-gray-500">Welcome back, here's what's happening today</p>
                 </div>
-
                 <div class="flex items-center space-x-4">
-                    <!-- Date Range Picker -->
-                    <div class="relative">
-                        <button onclick="app.toggleDatePicker()" class="flex items-center space-x-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors">
-                            <i data-lucide="calendar" class="w-4 h-4 text-slate-500"></i>
-                            <span id="date-range-label">Last 7 Days</span>
-                            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-500"></i>
-                        </button>
-                        
-                        <!-- Date Dropdown -->
-                        <div id="date-dropdown" class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-50">
-                            <button onclick="app.setDateRange('today')" class="w-full text-left px-4 py-2 text-sm hover:bg-slate-50">Today</button>
-                            <button onclick="app.setDateRange('yesterday')" class="w-full text-left px-4 py-2 text-sm hover:bg-slate-50">Yesterday</button>
-                            <button onclick="app.setDateRange('7days')" class="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 bg-green-50 text-green-700">Last 7 Days</button>
-                            <button onclick="app.setDateRange('30days')" class="w-full text-left px-4 py-2 text-sm hover:bg-slate-50">Last 30 Days</button>
-                            <button onclick="app.setDateRange('custom')" class="w-full text-left px-4 py-2 text-sm hover:bg-slate-50">Custom Range</button>
-                        </div>
-                    </div>
-
-                    <!-- Notifications -->
-                    <div class="relative">
-                        <button onclick="app.toggleNotifications()" class="relative p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
-                            <i data-lucide="bell" class="w-5 h-5"></i>
-                            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                        </button>
-                        
-                        <!-- Notifications Dropdown -->
-                        <div id="notifications-dropdown" class="dropdown-menu hidden absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-slate-200 z-50">
-                            <div class="p-4 border-b border-slate-100 flex justify-between items-center">
-                                <h3 class="font-semibold">Notifications</h3>
-                                <button class="text-xs text-green-600 hover:underline">Mark all read</button>
-                            </div>
-                            <div class="max-h-64 overflow-y-auto">
-                                <div class="p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer">
-                                    <div class="flex items-start space-x-3">
-                                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                            <i data-lucide="shopping-bag" class="w-4 h-4 text-blue-600"></i>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm font-medium text-slate-900">New order #FB-2024-156</p>
-                                            <p class="text-xs text-slate-500 mt-1">2 minutes ago • $124.50</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer">
-                                    <div class="flex items-start space-x-3">
-                                        <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                            <i data-lucide="alert-triangle" class="w-4 h-4 text-yellow-600"></i>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm font-medium text-slate-900">Low stock: Organic Bananas</p>
-                                            <p class="text-xs text-slate-500 mt-1">15 minutes ago • Only 5 left</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="p-4 hover:bg-slate-50 cursor-pointer">
-                                    <div class="flex items-start space-x-3">
-                                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                            <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm font-medium text-slate-900">Delivery completed #FB-2024-149</p>
-                                            <p class="text-xs text-slate-500 mt-1">1 hour ago</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Quick Actions -->
-                    <button onclick="app.showQuickActions()" class="p-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors shadow-lg shadow-green-200">
-                        <i data-lucide="plus" class="w-5 h-5"></i>
+                    <button onclick="adminApp.refreshData()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Refresh">
+                        <i data-lucide="refresh-cw" class="w-5 h-5 text-gray-600"></i>
+                    </button>
+                    <button onclick="adminApp.toggleNotifications()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors relative">
+                        <i data-lucide="bell" class="w-5 h-5 text-gray-600"></i>
+                        <span id="notification-badge" class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full hidden"></span>
                     </button>
                 </div>
             </header>
 
-            <!-- Dashboard Content -->
-            <div id="content-dashboard" class="page-content p-8 animate-fade-in">
-                
-                <!-- KPI Cards Row -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <!-- Revenue -->
-                    <div class="metric-card bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <p class="text-sm font-medium text-slate-500">Total Revenue</p>
-                                <h3 class="text-2xl font-bold text-slate-900 mt-1" id="kpi-revenue">$24,562.00</h3>
-                            </div>
-                            <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                                <i data-lucide="dollar-sign" class="w-5 h-5 text-green-600"></i>
-                            </div>
-                        </div>
-                        <div class="flex items-center text-sm">
-                            <span class="text-green-600 font-medium flex items-center">
-                                <i data-lucide="trending-up" class="w-4 h-4 mr-1"></i>
-                                +12.5%
-                            </span>
-                            <span class="text-slate-400 ml-2">vs last period</span>
-                        </div>
-                        <div class="mt-4 h-2 bg-slate-100 rounded-full overflow-hidden">
-                            <div class="h-full bg-green-500 rounded-full" style="width: 75%"></div>
-                        </div>
-                    </div>
-
-                    <!-- Orders -->
-                    <div class="metric-card bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <p class="text-sm font-medium text-slate-500">Total Orders</p>
-                                <h3 class="text-2xl font-bold text-slate-900 mt-1" id="kpi-orders">156</h3>
-                            </div>
-                            <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                                <i data-lucide="shopping-bag" class="w-5 h-5 text-blue-600"></i>
-                            </div>
-                        </div>
-                        <div class="flex items-center text-sm">
-                            <span class="text-green-600 font-medium flex items-center">
-                                <i data-lucide="trending-up" class="w-4 h-4 mr-1"></i>
-                                +8.2%
-                            </span>
-                            <span class="text-slate-400 ml-2">vs last period</span>
-                        </div>
-                        <div class="mt-4 flex space-x-2">
-                            <div class="flex-1 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-xs font-medium text-blue-700">Pending: 12</div>
-                            <div class="flex-1 h-8 bg-green-50 rounded-lg flex items-center justify-center text-xs font-medium text-green-700">Completed: 144</div>
-                        </div>
-                    </div>
-
-                    <!-- Customers -->
-                    <div class="metric-card bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <p class="text-sm font-medium text-slate-500">New Customers</p>
-                                <h3 class="text-2xl font-bold text-slate-900 mt-1" id="kpi-customers">48</h3>
-                            </div>
-                            <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                                <i data-lucide="users" class="w-5 h-5 text-purple-600"></i>
-                            </div>
-                        </div>
-                        <div class="flex items-center text-sm">
-                            <span class="text-red-600 font-medium flex items-center">
-                                <i data-lucide="trending-down" class="w-4 h-4 mr-1"></i>
-                                -2.4%
-                            </span>
-                            <span class="text-slate-400 ml-2">vs last period</span>
-                        </div>
-                        <div class="mt-4 flex -space-x-2">
-                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" class="w-8 h-8 rounded-full border-2 border-white" alt="">
-                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" class="w-8 h-8 rounded-full border-2 border-white" alt="">
-                            <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop" class="w-8 h-8 rounded-full border-2 border-white" alt="">
-                            <div class="w-8 h-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-600">+45</div>
-                        </div>
-                    </div>
-
-                    <!-- Avg Order Value -->
-                    <div class="metric-card bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <p class="text-sm font-medium text-slate-500">Avg Order Value</p>
-                                <h3 class="text-2xl font-bold text-slate-900 mt-1" id="kpi-aov">$157.45</h3>
-                            </div>
-                            <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
-                                <i data-lucide="receipt" class="w-5 h-5 text-orange-600"></i>
-                            </div>
-                        </div>
-                        <div class="flex items-center text-sm">
-                            <span class="text-green-600 font-medium flex items-center">
-                                <i data-lucide="trending-up" class="w-4 h-4 mr-1"></i>
-                                +5.3%
-                            </span>
-                            <span class="text-slate-400 ml-2">vs last period</span>
-                        </div>
-                        <div class="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-                            <div class="bg-slate-50 rounded-lg p-2">
-                                <div class="font-bold text-slate-900">Min</div>
-                                <div class="text-slate-500">$23</div>
-                            </div>
-                            <div class="bg-slate-50 rounded-lg p-2">
-                                <div class="font-bold text-slate-900">Avg</div>
-                                <div class="text-slate-500">$157</div>
-                            </div>
-                            <div class="bg-slate-50 rounded-lg p-2">
-                                <div class="font-bold text-slate-900">Max</div>
-                                <div class="text-slate-500">$489</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Charts Row -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                    <!-- Revenue Chart -->
-                    <div class="lg:col-span-2 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                        <div class="flex justify-between items-center mb-6">
-                            <div>
-                                <h3 class="font-bold text-lg text-slate-900">Revenue Overview</h3>
-                                <p class="text-sm text-slate-500">Daily revenue for selected period</p>
-                            </div>
-                            <div class="flex space-x-2">
-                                <button class="px-3 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-lg">Revenue</button>
-                                <button class="px-3 py-1 text-xs font-medium text-slate-500 hover:bg-slate-100 rounded-lg">Orders</button>
-                            </div>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="revenueChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Sales by Category -->
-                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                        <h3 class="font-bold text-lg text-slate-900 mb-2">Sales by Category</h3>
-                        <p class="text-sm text-slate-500 mb-6">Distribution across product categories</p>
-                        <div class="chart-container" style="height: 250px;">
-                            <canvas id="categoryChart"></canvas>
-                        </div>
-                        <div class="mt-4 space-y-2">
-                            <div class="flex justify-between items-center text-sm">
-                                <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-green-500 mr-2"></span>Fruits</span>
-                                <span class="font-semibold">45%</span>
-                            </div>
-                            <div class="flex justify-between items-center text-sm">
-                                <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-emerald-400 mr-2"></span>Vegetables</span>
-                                <span class="font-semibold">35%</span>
-                            </div>
-                            <div class="flex justify-between items-center text-sm">
-                                <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-teal-400 mr-2"></span>Organic</span>
-                                <span class="font-semibold">20%</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Secondary Metrics Row -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                    <!-- Hourly Sales Heatmap -->
-                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                        <div class="flex justify-between items-center mb-6">
-                            <div>
-                                <h3 class="font-bold text-lg text-slate-900">Peak Sales Hours</h3>
-                                <p class="text-sm text-slate-500">Order volume by hour of day</p>
-                            </div>
-                            <button class="text-slate-400 hover:text-slate-600">
-                                <i data-lucide="download" class="w-5 h-5"></i>
-                            </button>
-                        </div>
-                        <div id="sales-heatmap" class="grid grid-cols-12 gap-1">
-                            <!-- Generated by JS -->
-                        </div>
-                        <div class="flex justify-between mt-4 text-xs text-slate-500">
-                            <span>12 AM</span>
-                            <span>6 AM</span>
-                            <span>12 PM</span>
-                            <span>6 PM</span>
-                            <span>11 PM</span>
-                        </div>
-                    </div>
-
-                    <!-- Top Products -->
-                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                        <div class="flex justify-between items-center mb-6">
-                            <div>
-                                <h3 class="font-bold text-lg text-slate-900">Top Performing Products</h3>
-                                <p class="text-sm text-slate-500">By revenue generated</p>
-                            </div>
-                            <button onclick="app.navigate('products')" class="text-sm text-green-600 hover:underline">View All</button>
-                        </div>
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
-                                <div class="flex items-center space-x-3">
-                                    <img src="https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=100&h=100&fit=crop" class="w-12 h-12 rounded-lg object-cover">
-                                    <div>
-                                        <p class="font-semibold text-slate-900">Organic Bananas</p>
-                                        <p class="text-xs text-slate-500">234 sold</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="font-bold text-slate-900">$1,405.66</p>
-                                    <span class="text-xs text-green-600">+12%</span>
-                                </div>
-                            </div>
-                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
-                                <div class="flex items-center space-x-3">
-                                    <img src="https://images.unsplash.com/photo-1523049673856-6485b5301054?w=100&h=100&fit=crop" class="w-12 h-12 rounded-lg object-cover">
-                                    <div>
-                                        <p class="font-semibold text-slate-900">Fresh Avocados</p>
-                                        <p class="text-xs text-slate-500">189 sold</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="font-bold text-slate-900">$1,048.11</p>
-                                    <span class="text-xs text-green-600">+8%</span>
-                                </div>
-                            </div>
-                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
-                                <div class="flex items-center space-x-3">
-                                    <img src="https://images.unsplash.com/photo-1498557850523-fd3d118b962e?w=100&h=100&fit=crop" class="w-12 h-12 rounded-lg object-cover">
-                                    <div>
-                                        <p class="font-semibold text-slate-900">Organic Blueberries</p>
-                                        <p class="text-xs text-slate-500">156 sold</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="font-bold text-slate-900">$778.44</p>
-                                    <span class="text-xs text-red-500">-3%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recent Orders Table -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-                        <div>
-                            <h3 class="font-bold text-lg text-slate-900">Recent Orders</h3>
-                            <p class="text-sm text-slate-500">Latest 10 orders from your store</p>
-                        </div>
-                        <div class="flex space-x-3">
-                            <button class="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors flex items-center">
-                                <i data-lucide="filter" class="w-4 h-4 mr-2"></i>
-                                Filter
-                            </button>
-                            <button onclick="app.navigate('orders')" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
-                                View All Orders
-                            </button>
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead class="bg-slate-50">
-                                <tr>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Order ID</th>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Customer</th>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Items</th>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Total</th>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Status</th>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Date</th>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="recent-orders-table" class="divide-y divide-slate-100">
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Inventory Alerts -->
-                <div class="mt-8 bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl p-6 border border-red-100">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
-                                <i data-lucide="alert-triangle" class="w-5 h-5 text-red-600"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-slate-900">Low Stock Alerts</h3>
-                                <p class="text-sm text-slate-600">5 products need immediate attention</p>
-                            </div>
-                        </div>
-                        <button onclick="app.navigate('inventory')" class="text-sm font-medium text-red-600 hover:underline">Manage Inventory</button>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-white rounded-xl p-4 border border-red-200 flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                <img src="https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=100&h=100&fit=crop" class="w-10 h-10 rounded-lg object-cover">
+            <!-- Content Area -->
+            <div class="p-4 lg:p-8">
+                <!-- DASHBOARD PAGE -->
+                <section id="page-dashboard" class="page-section">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                            <div class="flex justify-between items-start">
                                 <div>
-                                    <p class="font-semibold text-sm">Organic Bananas</p>
-                                    <p class="text-xs text-red-600 font-medium">Only 5 left</p>
+                                    <p class="text-sm text-gray-500 mb-1">Today's Revenue</p>
+                                    <h3 id="stat-today-revenue" class="text-2xl font-bold text-gray-900">₹0.00</h3>
+                                    <p id="stat-revenue-change" class="text-sm text-green-600 mt-1 flex items-center"><i data-lucide="trending-up" class="w-4 h-4 mr-1"></i>+0%</p>
                                 </div>
+                                <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center"><i data-lucide="dollar-sign" class="w-6 h-6 text-green-600"></i></div>
                             </div>
-                            <button class="text-xs bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors">Restock</button>
                         </div>
-                        <div class="bg-white rounded-xl p-4 border border-red-200 flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                <img src="https://images.unsplash.com/photo-1596097635121-14b63b7a0c19?w=100&h=100&fit=crop" class="w-10 h-10 rounded-lg object-cover">
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                            <div class="flex justify-between items-start">
                                 <div>
-                                    <p class="font-semibold text-sm">Sweet Potatoes</p>
-                                    <p class="text-xs text-red-600 font-medium">Only 8 left</p>
+                                    <p class="text-sm text-gray-500 mb-1">Total Orders</p>
+                                    <h3 id="stat-total-orders" class="text-2xl font-bold text-gray-900">0</h3>
+                                    <p id="stat-orders-change" class="text-sm text-green-600 mt-1 flex items-center"><i data-lucide="trending-up" class="w-4 h-4 mr-1"></i>+0%</p>
                                 </div>
+                                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center"><i data-lucide="shopping-bag" class="w-6 h-6 text-blue-600"></i></div>
                             </div>
-                            <button class="text-xs bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors">Restock</button>
                         </div>
-                        <div class="bg-white rounded-xl p-4 border border-red-200 flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                <img src="https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=100&h=100&fit=crop" class="w-10 h-10 rounded-lg object-cover">
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                            <div class="flex justify-between items-start">
                                 <div>
-                                    <p class="font-semibold text-sm">Strawberries</p>
-                                    <p class="text-xs text-red-600 font-medium">Only 3 left</p>
+                                    <p class="text-sm text-gray-500 mb-1">Pending Orders</p>
+                                    <h3 id="stat-pending-orders" class="text-2xl font-bold text-orange-600">0</h3>
+                                    <p class="text-sm text-gray-400 mt-1">Needs attention</p>
                                 </div>
-                            </div>
-                            <button class="text-xs bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors">Restock</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Orders Management Page -->
-            <div id="content-orders" class="page-content hidden p-8 animate-fade-in">
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
-                    <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <div>
-                            <h3 class="font-bold text-lg text-slate-900">All Orders</h3>
-                            <p class="text-sm text-slate-500">Manage and track customer orders</p>
-                        </div>
-                        <div class="flex space-x-3">
-                            <div class="relative">
-                                <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                                <input type="text" placeholder="Search orders..." class="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none">
-                            </div>
-                            <button class="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 flex items-center">
-                                <i data-lucide="download" class="w-4 h-4 mr-2"></i>
-                                Export
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Order Stats -->
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-slate-50/50 border-b border-slate-100">
-                        <div class="bg-white p-4 rounded-xl border border-slate-200">
-                            <p class="text-xs text-slate-500 uppercase font-semibold">Total Orders</p>
-                            <p class="text-2xl font-bold text-slate-900 mt-1">1,284</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-xl border border-slate-200">
-                            <p class="text-xs text-slate-500 uppercase font-semibold">Pending</p>
-                            <p class="text-2xl font-bold text-yellow-600 mt-1">24</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-xl border border-slate-200">
-                            <p class="text-xs text-slate-500 uppercase font-semibold">Processing</p>
-                            <p class="text-2xl font-bold text-blue-600 mt-1">18</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-xl border border-slate-200">
-                            <p class="text-xs text-slate-500 uppercase font-semibold">Completed</p>
-                            <p class="text-2xl font-bold text-green-600 mt-1">1,242</p>
-                        </div>
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead class="bg-slate-50">
-                                <tr>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">
-                                        <input type="checkbox" class="rounded border-slate-300 text-green-600 focus:ring-green-500">
-                                    </th>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Order ID</th>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Customer</th>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Products</th>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Total</th>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Payment</th>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Status</th>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Date</th>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="all-orders-table" class="divide-y divide-slate-100">
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <!-- Pagination -->
-                    <div class="p-6 border-t border-slate-100 flex justify-between items-center">
-                        <p class="text-sm text-slate-500">Showing 1-10 of 1,284 orders</p>
-                        <div class="flex space-x-2">
-                            <button class="px-3 py-1 border border-slate-200 rounded-lg text-sm hover:bg-slate-50 disabled:opacity-50" disabled>Previous</button>
-                            <button class="px-3 py-1 bg-green-600 text-white rounded-lg text-sm">1</button>
-                            <button class="px-3 py-1 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">2</button>
-                            <button class="px-3 py-1 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">3</button>
-                            <span class="px-2 py-1 text-slate-400">...</span>
-                            <button class="px-3 py-1 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">128</button>
-                            <button class="px-3 py-1 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">Next</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Products Management Page -->
-            <div id="content-products" class="page-content hidden p-8 animate-fade-in">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h3 class="font-bold text-2xl text-slate-900">Products</h3>
-                        <p class="text-sm text-slate-500">Manage your product catalog</p>
-                    </div>
-                    <button onclick="app.showAddProductModal()" class="px-6 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors shadow-lg shadow-green-200 flex items-center">
-                        <i data-lucide="plus" class="w-5 h-5 mr-2"></i>
-                        Add Product
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <p class="text-sm text-slate-500">Total Products</p>
-                        <p class="text-3xl font-bold text-slate-900 mt-2">156</p>
-                        <div class="mt-2 flex items-center text-sm text-green-600">
-                            <i data-lucide="trending-up" class="w-4 h-4 mr-1"></i>
-                            <span>+12 this month</span>
-                        </div>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <p class="text-sm text-slate-500">Active Products</p>
-                        <p class="text-3xl font-bold text-green-600 mt-2">142</p>
-                        <div class="mt-2 text-sm text-slate-400">91% of total</div>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <p class="text-sm text-slate-500">Out of Stock</p>
-                        <p class="text-3xl font-bold text-red-600 mt-2">8</p>
-                        <div class="mt-2 text-sm text-slate-400">Needs attention</div>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <p class="text-sm text-slate-500">Avg Margin</p>
-                        <p class="text-3xl font-bold text-blue-600 mt-2">32.5%</p>
-                        <div class="mt-2 flex items-center text-sm text-green-600">
-                            <i data-lucide="trending-up" class="w-4 h-4 mr-1"></i>
-                            <span>+2.1%</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <div class="flex space-x-2">
-                            <button class="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium">All Products</button>
-                            <button class="px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm font-medium">Active</button>
-                            <button class="px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm font-medium">Low Stock</button>
-                            <button class="px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm font-medium">Drafts</button>
-                        </div>
-                        <div class="flex space-x-3">
-                            <div class="relative">
-                                <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                                <input type="text" placeholder="Search products..." class="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none w-64">
-                            </div>
-                            <button class="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 flex items-center">
-                                <i data-lucide="filter" class="w-4 h-4 mr-2"></i>
-                                Filter
-                            </button>
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead class="bg-slate-50">
-                                <tr>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Product</th>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Category</th>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Price</th>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Stock</th>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Status</th>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Sales</th>
-                                    <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="products-table" class="divide-y divide-slate-100">
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Analytics Page -->
-            <div id="content-analytics" class="page-content hidden p-8 animate-fade-in">
-                <div class="mb-8">
-                    <h3 class="font-bold text-2xl text-slate-900">Advanced Analytics</h3>
-                    <p class="text-sm text-slate-500">Deep insights into your business performance</p>
-                </div>
-
-                <!-- Conversion Funnel -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                    <div class="lg:col-span-2 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                        <h4 class="font-bold text-lg mb-4">Conversion Funnel</h4>
-                        <div class="space-y-4">
-                            <div class="relative">
-                                <div class="flex justify-between text-sm mb-1">
-                                    <span class="font-medium">Product Views</span>
-                                    <span class="text-slate-500">12,456 (100%)</span>
-                                </div>
-                                <div class="h-8 bg-slate-100 rounded-lg overflow-hidden">
-                                    <div class="h-full bg-blue-500 rounded-lg" style="width: 100%"></div>
-                                </div>
-                            </div>
-                            <div class="relative">
-                                <div class="flex justify-between text-sm mb-1">
-                                    <span class="font-medium">Add to Cart</span>
-                                    <span class="text-slate-500">3,214 (25.8%)</span>
-                                </div>
-                                <div class="h-8 bg-slate-100 rounded-lg overflow-hidden">
-                                    <div class="h-full bg-blue-400 rounded-lg" style="width: 25.8%"></div>
-                                </div>
-                            </div>
-                            <div class="relative">
-                                <div class="flex justify-between text-sm mb-1">
-                                    <span class="font-medium">Checkout Started</span>
-                                    <span class="text-slate-500">1,568 (12.6%)</span>
-                                </div>
-                                <div class="h-8 bg-slate-100 rounded-lg overflow-hidden">
-                                    <div class="h-full bg-blue-300 rounded-lg" style="width: 12.6%"></div>
-                                </div>
-                            </div>
-                            <div class="relative">
-                                <div class="flex justify-between text-sm mb-1">
-                                    <span class="font-medium">Purchase Completed</span>
-                                    <span class="text-slate-500">1,156 (9.3%)</span>
-                                </div>
-                                <div class="h-8 bg-slate-100 rounded-lg overflow-hidden">
-                                    <div class="h-full bg-green-500 rounded-lg" style="width: 9.3%"></div>
-                                </div>
+                                <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center"><i data-lucide="clock" class="w-6 h-6 text-orange-600"></i></div>
                             </div>
                         </div>
-                        <div class="mt-6 p-4 bg-green-50 rounded-xl border border-green-200">
-                            <div class="flex items-center justify-between">
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                            <div class="flex justify-between items-start">
                                 <div>
-                                    <p class="font-semibold text-green-900">Conversion Rate</p>
-                                    <p class="text-2xl font-bold text-green-700">9.3%</p>
+                                    <p class="text-sm text-gray-500 mb-1">Low Stock Items</p>
+                                    <h3 id="stat-low-stock" class="text-2xl font-bold text-red-600">0</h3>
+                                    <p class="text-sm text-gray-400 mt-1">Products to restock</p>
                                 </div>
-                                <div class="text-right">
-                                    <p class="text-sm text-green-700">Industry avg: 2.4%</p>
-                                    <p class="text-xs text-green-600">You're performing 287% better!</p>
-                                </div>
+                                <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center"><i data-lucide="alert-triangle" class="w-6 h-6 text-red-600"></i></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Customer Metrics -->
-                    <div class="space-y-6">
-                        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                            <h4 class="font-bold text-lg mb-4">Customer Retention</h4>
-                            <div class="chart-container" style="height: 200px;">
-                                <canvas id="retentionChart"></canvas>
-                            </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                            <h3 class="font-semibold text-gray-900 mb-4">Revenue Overview</h3>
+                            <div class="relative h-64"><canvas id="revenue-chart"></canvas></div>
                         </div>
-                        
-                        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                            <h4 class="font-bold text-lg mb-4">Top Traffic Sources</h4>
-                            <div class="space-y-3">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center">
-                                        <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
-                                            <i data-lucide="search" class="w-4 h-4 text-blue-600"></i>
-                                        </div>
-                                        <span class="font-medium">Organic Search</span>
-                                    </div>
-                                    <span class="font-bold">45%</span>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center">
-                                        <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center mr-3">
-                                            <i data-lucide="instagram" class="w-4 h-4 text-purple-600"></i>
-                                        </div>
-                                        <span class="font-medium">Social Media</span>
-                                    </div>
-                                    <span class="font-bold">28%</span>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center">
-                                        <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center mr-3">
-                                            <i data-lucide="mail" class="w-4 h-4 text-green-600"></i>
-                                        </div>
-                                        <span class="font-medium">Email Campaign</span>
-                                    </div>
-                                    <span class="font-bold">18%</span>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center">
-                                        <div class="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center mr-3">
-                                            <i data-lucide="link" class="w-4 h-4 text-orange-600"></i>
-                                        </div>
-                                        <span class="font-medium">Direct</span>
-                                    </div>
-                                    <span class="font-bold">9%</span>
-                                </div>
-                            </div>
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                            <h3 class="font-semibold text-gray-900 mb-4">Order Status Distribution</h3>
+                            <div class="relative h-64"><canvas id="orders-chart"></canvas></div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Geographic Sales -->
-                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm mb-8">
-                    <div class="flex justify-between items-center mb-6">
-                        <div>
-                            <h4 class="font-bold text-lg">Sales by Region</h4>
-                            <p class="text-sm text-slate-500">Geographic distribution of orders</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                                <h3 class="font-semibold text-gray-900">Recent Orders</h3>
+                                <button onclick="adminApp.navigate('orders')" class="text-green-600 hover:text-green-700 text-sm font-medium">View All</button>
+                            </div>
+                            <div id="recent-orders-list" class="divide-y divide-gray-100"></div>
                         </div>
-                        <button class="text-sm text-green-600 hover:underline">View Detailed Report</button>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="chart-container">
-                            <canvas id="regionChart"></canvas>
-                        </div>
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
-                                <div class="flex items-center">
-                                    <span class="text-2xl mr-3">🗽</span>
-                                    <div>
-                                        <p class="font-semibold">New York</p>
-                                        <p class="text-xs text-slate-500">456 orders</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="font-bold">$67,234</p>
-                                    <span class="text-xs text-green-600">+15%</span>
-                                </div>
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                                <h3 class="font-semibold text-gray-900">Top Selling Products</h3>
+                                <button onclick="adminApp.navigate('products')" class="text-green-600 hover:text-green-700 text-sm font-medium">View All</button>
                             </div>
-                            <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
-                                <div class="flex items-center">
-                                    <span class="text-2xl mr-3">🌴</span>
-                                    <div>
-                                        <p class="font-semibold">California</p>
-                                        <p class="text-xs text-slate-500">389 orders</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="font-bold">$52,891</p>
-                                    <span class="text-xs text-green-600">+8%</span>
-                                </div>
-                            </div>
-                            <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
-                                <div class="flex items-center">
-                                    <span class="text-2xl mr-3">🏛️</span>
-                                    <div>
-                                        <p class="font-semibold">Texas</p>
-                                        <p class="text-xs text-slate-500">234 orders</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="font-bold">$31,456</p>
-                                    <span class="text-xs text-red-500">-3%</span>
-                                </div>
-                            </div>
+                            <div id="top-products-list" class="divide-y divide-gray-100"></div>
                         </div>
                     </div>
-                </div>
+                </section>
+
+                <!-- ORDERS PAGE -->
+                <section id="page-orders" class="page-section hidden">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="p-4 lg:p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="adminApp.filterOrders('all')" class="filter-btn active px-3 py-1.5 rounded-lg text-sm font-medium bg-green-600 text-white" data-filter="all">All</button>
+                                <button onclick="adminApp.filterOrders('pending')" class="filter-btn px-3 py-1.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200" data-filter="pending">Pending</button>
+                                <button onclick="adminApp.filterOrders('confirmed')" class="filter-btn px-3 py-1.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200" data-filter="confirmed">Confirmed</button>
+                                <button onclick="adminApp.filterOrders('delivered')" class="filter-btn px-3 py-1.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200" data-filter="delivered">Delivered</button>
+                            </div>
+                            <div class="flex space-x-2 w-full sm:w-auto">
+                                <input type="text" id="order-search" placeholder="Search orders..." oninput="adminApp.searchOrders(this.value)" class="flex-1 sm:flex-none px-4 py-2 border border-gray-200 rounded-lg focus:border-green-500 outline-none text-sm">
+                                <button onclick="adminApp.exportOrders()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors flex items-center"><i data-lucide="download" class="w-4 h-4 mr-2"></i>Export</button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order #</th>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Items</th>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="orders-table-body" class="divide-y divide-gray-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PRODUCTS PAGE -->
+                <section id="page-products" class="page-section hidden">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="adminApp.filterProducts('all')" class="category-filter active px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-green-600 text-white" data-category="all">All</button>
+                            <button onclick="adminApp.filterProducts('fruits')" class="category-filter px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200" data-category="fruits">Fruits</button>
+                            <button onclick="adminApp.filterProducts('vegetables')" class="category-filter px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200" data-category="vegetables">Vegetables</button>
+                            <button onclick="adminApp.filterProducts('bundles')" class="category-filter px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200" data-category="bundles">Bundles</button>
+                            <button onclick="adminApp.filterProducts('organic')" class="category-filter px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200" data-category="organic">Organic</button>
+                        </div>
+                        <button onclick="adminApp.openProductModal()" class="w-full sm:w-auto px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center"><i data-lucide="plus" class="w-4 h-4 mr-2"></i>Add Product</button>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                        <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="products-table-body" class="divide-y divide-gray-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- INVENTORY PAGE -->
+                <section id="page-inventory" class="page-section hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                            <h3 class="font-semibold text-gray-900 mb-4">Stock Overview</h3>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center"><span class="text-gray-600">Total Products</span><span id="inventory-total" class="font-bold text-gray-900">0</span></div>
+                                <div class="flex justify-between items-center"><span class="text-gray-600">In Stock</span><span id="inventory-in-stock" class="font-bold text-green-600">0</span></div>
+                                <div class="flex justify-between items-center"><span class="text-gray-600">Low Stock</span><span id="inventory-low" class="font-bold text-orange-600">0</span></div>
+                                <div class="flex justify-between items-center"><span class="text-gray-600">Out of Stock</span><span id="inventory-out" class="font-bold text-red-600">0</span></div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 lg:col-span-2">
+                            <h3 class="font-semibold text-gray-900 mb-4">Low Stock Alerts</h3>
+                            <div id="low-stock-alerts" class="space-y-3 max-h-48 overflow-y-auto"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="p-6 border-b border-gray-100"><h3 class="font-semibold text-gray-900">Inventory Logs</h3></div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Change</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reason</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventory-logs-body" class="divide-y divide-gray-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CUSTOMERS PAGE -->
+                <section id="page-customers" class="page-section hidden">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <h3 class="font-semibold text-gray-900">Customer Management</h3>
+                            <input type="text" id="customer-search" placeholder="Search customers..." oninput="adminApp.searchCustomers(this.value)" class="w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-lg focus:border-green-500 outline-none text-sm">
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Spent</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customers-table-body" class="divide-y divide-gray-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
             </div>
-
-            <!-- Inventory Page -->
-            <div id="content-inventory" class="page-content hidden p-8 animate-fade-in">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h3 class="font-bold text-2xl text-slate-900">Inventory Management</h3>
-                        <p class="text-sm text-slate-500">Track stock levels and manage suppliers</p>
-                    </div>
-                    <div class="flex space-x-3">
-                        <button class="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 flex items-center">
-                            <i data-lucide="upload" class="w-4 h-4 mr-2"></i>
-                            Import CSV
-                        </button>
-                        <button class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 flex items-center">
-                            <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
-                            Add Stock
-                        </button>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-slate-500">Total SKUs</p>
-                                <p class="text-2xl font-bold text-slate-900">156</p>
-                            </div>
-                            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                                <i data-lucide="package" class="w-6 h-6 text-blue-600"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-slate-500">In Stock</p>
-                                <p class="text-2xl font-bold text-green-600">142</p>
-                            </div>
-                            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                                <i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-slate-500">Low Stock</p>
-                                <p class="text-2xl font-bold text-yellow-600">8</p>
-                            </div>
-                            <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
-                                <i data-lucide="alert-triangle" class="w-6 h-6 text-yellow-600"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-slate-500">Out of Stock</p>
-                                <p class="text-2xl font-bold text-red-600">6</p>
-                            </div>
-                            <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-                                <i data-lucide="x-circle" class="w-6 h-6 text-red-600"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div class="p-6 border-b border-slate-100">
-                        <div class="flex space-x-2">
-                            <button class="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm">All Inventory</button>
-                            <button class="px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm">Low Stock</button>
-                            <button class="px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm">Out of Stock</button>
-                            <button class="px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm">Archived</button>
-                        </div>
-                    </div>
-                    <table class="w-full">
-                        <thead class="bg-slate-50">
-                            <tr>
-                                <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Product</th>
-                                <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">SKU</th>
-                                <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Current Stock</th>
-                                <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Reorder Point</th>
-                                <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Status</th>
-                                <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Last Restocked</th>
-                                <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-4">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            <tr class="table-row">
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center">
-                                        <img src="https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=100&h=100&fit=crop" class="w-10 h-10 rounded-lg object-cover mr-3">
-                                        <span class="font-medium">Organic Bananas</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-slate-600">FRU-001</td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center">
-                                        <div class="w-16 bg-slate-200 rounded-full h-2 mr-2">
-                                            <div class="bg-red-500 h-2 rounded-full" style="width: 10%"></div>
-                                        </div>
-                                        <span class="text-sm font-medium">5</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-sm">50</td>
-                                <td class="px-6 py-4"><span class="status-badge bg-red-100 text-red-700">Critical</span></td>
-                                <td class="px-6 py-4 text-sm text-slate-500">2 days ago</td>
-                                <td class="px-6 py-4">
-                                    <button class="text-green-600 hover:text-green-700 font-medium text-sm">Restock</button>
-                                </td>
-                            </tr>
-                            <tr class="table-row">
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center">
-                                        <img src="https://images.unsplash.com/photo-1523049673856-6485b5301054?w=100&h=100&fit=crop" class="w-10 h-10 rounded-lg object-cover mr-3">
-                                        <span class="font-medium">Fresh Avocados</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-slate-600">FRU-002</td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center">
-                                        <div class="w-16 bg-slate-200 rounded-full h-2 mr-2">
-                                            <div class="bg-green-500 h-2 rounded-full" style="width: 75%"></div>
-                                        </div>
-                                        <span class="text-sm font-medium">142</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-sm">30</td>
-                                <td class="px-6 py-4"><span class="status-badge bg-green-100 text-green-700">Healthy</span></td>
-                                <td class="px-6 py-4 text-sm text-slate-500">1 week ago</td>
-                                <td class="px-6 py-4">
-                                    <button class="text-slate-400 hover:text-slate-600 font-medium text-sm">Edit</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Other placeholder pages -->
-            <div id="content-customers" class="page-content hidden p-8 animate-fade-in">
-                <div class="text-center py-20">
-                    <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i data-lucide="users" class="w-10 h-10 text-slate-400"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900">Customers Page</h3>
-                    <p class="text-slate-500 mt-2">Customer management module coming soon</p>
-                </div>
-            </div>
-
-            <div id="content-shipping" class="page-content hidden p-8 animate-fade-in">
-                <div class="text-center py-20">
-                    <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i data-lucide="truck" class="w-10 h-10 text-slate-400"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900">Shipping Management</h3>
-                    <p class="text-slate-500 mt-2">Logistics and delivery tracking coming soon</p>
-                </div>
-            </div>
-
-            <div id="content-marketing" class="page-content hidden p-8 animate-fade-in">
-                <div class="text-center py-20">
-                    <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i data-lucide="megaphone" class="w-10 h-10 text-slate-400"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900">Marketing Center</h3>
-                    <p class="text-slate-500 mt-2">Campaign management and promotions coming soon</p>
-                </div>
-            </div>
-
-            <div id="content-reviews" class="page-content hidden p-8 animate-fade-in">
-                <div class="text-center py-20">
-                    <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i data-lucide="star" class="w-10 h-10 text-slate-400"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900">Reviews & Ratings</h3>
-                    <p class="text-slate-500 mt-2">Customer feedback management coming soon</p>
-                </div>
-            </div>
-
         </main>
     </div>
 
-    <script>
-        const app = {
-            state: {
-                currentPage: 'dashboard',
-                dateRange: '7days',
-                charts: {},
-                orders: [
-                    { id: 'FB-2024-156', customer: 'Sarah Mitchell', email: 'sarah@email.com', items: 5, total: 124.50, status: 'pending', payment: 'Paid', date: '2024-01-15 14:30', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop' },
-                    { id: 'FB-2024-155', customer: 'James Chen', email: 'james@email.com', items: 3, total: 89.99, status: 'processing', payment: 'Paid', date: '2024-01-15 13:15', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop' },
-                    { id: 'FB-2024-154', customer: 'Emily Davis', email: 'emily@email.com', items: 8, total: 234.00, status: 'delivered', payment: 'Paid', date: '2024-01-15 11:45', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop' },
-                    { id: 'FB-2024-153', customer: 'Michael Torres', email: 'michael@email.com', items: 12, total: 456.80, status: 'delivered', payment: 'Paid', date: '2024-01-15 10:20', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop' },
-                    { id: 'FB-2024-152', customer: 'Lisa Anderson', email: 'lisa@email.com', items: 2, total: 45.50, status: 'cancelled', payment: 'Refunded', date: '2024-01-15 09:10', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop' },
-                    { id: 'FB-2024-151', customer: 'David Kim', email: 'david@email.com', items: 6, total: 178.25, status: 'processing', payment: 'Paid', date: '2024-01-15 08:45', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop' },
-                    { id: 'FB-2024-150', customer: 'Rachel Green', email: 'rachel@email.com', items: 4, total: 98.00, status: 'delivered', payment: 'Paid', date: '2024-01-14 16:30', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop' },
-                    { id: 'FB-2024-149', customer: 'Tom Wilson', email: 'tom@email.com', items: 7, total: 267.40, status: 'delivered', payment: 'Paid', date: '2024-01-14 14:15', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop' }
-                ],
-                products: [
-                    { id: 1, name: 'Organic Bananas', category: 'Fruits', price: 2.99, stock: 5, status: 'active', sales: 234, image: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=100&h=100&fit=crop' },
-                    { id: 2, name: 'Fresh Avocados', category: 'Fruits', price: 4.49, stock: 142, status: 'active', sales: 189, image: 'https://images.unsplash.com/photo-1523049673856-6485b5301054?w=100&h=100&fit=crop' },
-                    { id: 3, name: 'Red Apples', category: 'Fruits', price: 3.99, stock: 89, status: 'active', sales: 156, image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=100&h=100&fit=crop' },
-                    { id: 4, name: 'Organic Carrots', category: 'Vegetables', price: 1.99, stock: 234, status: 'active', sales: 145, image: 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=100&h=100&fit=crop' },
-                    { id: 5, name: 'Broccoli Crown', category: 'Vegetables', price: 2.49, stock: 67, status: 'active', sales: 98, image: 'https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?w=100&h=100&fit=crop' }
-                ]
-            },
+    <!-- Order Detail Modal -->
+    <div id="order-detail-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="adminApp.closeOrderDetail()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl pointer-events-auto">
+                <div class="sticky top-0 bg-white border-b border-gray-100 p-6 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900" id="modal-order-number">Order #FB-001</h2>
+                        <p class="text-sm text-gray-500" id="modal-order-date">Placed on Jan 1, 2024</p>
+                    </div>
+                    <button onclick="adminApp.closeOrderDetail()" class="p-2 hover:bg-gray-100 rounded-full"><i data-lucide="x" class="w-6 h-6 text-gray-600"></i></button>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <h4 class="font-semibold text-gray-900 mb-3">Order Status</h4>
+                            <select id="modal-order-status" onchange="adminApp.updateOrderStatusFromModal(this.value)" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-green-500 outline-none">
+                                <option value="pending">Pending</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="preparing">Preparing</option>
+                                <option value="out_for_delivery">Out for Delivery</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900 mb-3">Payment Status</h4>
+                            <p id="modal-payment-status" class="px-4 py-2 bg-gray-100 rounded-lg text-gray-700">Paid</p>
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-900 mb-3">Customer Information</h4>
+                        <div class="bg-gray-50 rounded-xl p-4">
+                            <p id="modal-customer-name" class="font-medium text-gray-900">John Doe</p>
+                            <p id="modal-customer-email" class="text-sm text-gray-600">john@example.com</p>
+                            <p id="modal-customer-phone" class="text-sm text-gray-600 mt-2">+1 555-0000</p>
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-900 mb-3">Delivery Address</h4>
+                        <div class="bg-gray-50 rounded-xl p-4">
+                            <p id="modal-delivery-address" class="text-gray-700">123 Fresh Street</p>
+                            <p id="modal-delivery-city" class="text-gray-700">New York, NY 10001</p>
+                            <p id="modal-delivery-instructions" class="text-sm text-gray-500 mt-2">Leave at door</p>
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-900 mb-3">Order Items</h4>
+                        <div id="modal-order-items" class="space-y-2"></div>
+                    </div>
+                    <div class="border-t border-gray-200 pt-4">
+                        <div class="flex justify-between mb-2"><span class="text-gray-600">Subtotal</span><span id="modal-subtotal" class="font-medium">₹0.00</span></div>
+                        <div class="flex justify-between mb-2"><span class="text-gray-600">Tax</span><span id="modal-tax" class="font-medium">₹0.00</span></div>
+                        <div class="flex justify-between mb-2"><span class="text-gray-600">Shipping</span><span id="modal-shipping" class="font-medium">₹0.00</span></div>
+                        <div class="flex justify-between text-xl font-bold pt-2 border-t border-gray-200"><span>Total</span><span id="modal-total" class="text-green-600">₹0.00</span></div>
+                    </div>
+                    <div class="mt-6 flex flex-col sm:flex-row gap-3">
+                        <button onclick="adminApp.printOrder()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center"><i data-lucide="printer" class="w-4 h-4 mr-2"></i>Print</button>
+                        <button onclick="adminApp.downloadInvoice()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center"><i data-lucide="download" class="w-4 h-4 mr-2"></i>Invoice</button>
+                        <button onclick="adminApp.cancelOrder()" id="modal-cancel-btn" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center"><i data-lucide="x-circle" class="w-4 h-4 mr-2"></i>Cancel Order</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            init() {
-                lucide.createIcons();
-                this.renderOrders();
-                this.renderProducts();
-                this.initCharts();
-                this.generateHeatmap();
-                this.startLiveUpdates();
-            },
+    <!-- Product Modal -->
+    <div id="product-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="adminApp.closeProductModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none overflow-y-auto">
+            <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl pointer-events-auto my-8">
+                <div class="sticky top-0 bg-white border-b border-gray-100 p-6 flex justify-between items-center rounded-t-2xl">
+                    <h2 class="text-2xl font-bold text-gray-900" id="product-modal-title">Add Product</h2>
+                    <button onclick="adminApp.closeProductModal()" class="p-2 hover:bg-gray-100 rounded-full"><i data-lucide="x" class="w-6 h-6 text-gray-600"></i></button>
+                </div>
+                <form id="product-form" onsubmit="adminApp.saveProduct(event)" class="p-6 space-y-4">
+                    <input type="hidden" name="product_id" id="product-id">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
+                            <input type="text" name="name" required class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                            <select name="category" required class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all">
+                                <option value="fruits">Fruits</option>
+                                <option value="vegetables">Vegetables</option>
+                                <option value="bundles">Bundles</option>
+                                <option value="organic">Organic</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Price (₹) *</label>
+                            <input type="number" name="price" step="0.01" min="0" required class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Unit *</label>
+                            <input type="text" name="unit" placeholder="kg, each, dozen, bundle" required class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Stock Quantity *</label>
+                            <input type="number" name="stock" min="0" required class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Low Stock Threshold</label>
+                            <input type="number" name="low_stock_threshold" value="10" min="0" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Image URL *</label>
+                            <input type="url" name="image" required placeholder="https://example.com/image.jpg" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Badge (Optional)</label>
+                            <input type="text" name="badge" placeholder="New, Sale, Popular" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all">
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-6 pt-2">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" name="organic" class="w-4 h-4 text-green-600 rounded focus:ring-green-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Organic Product</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" name="in_stock" id="product-in-stock" checked class="w-4 h-4 text-green-600 rounded focus:ring-green-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Available for Sale</span>
+                        </label>
+                    </div>
+                    <div class="flex gap-3 pt-4 border-t border-gray-100">
+                        <button type="button" onclick="adminApp.closeProductModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium">Cancel</button>
+                        <button type="submit" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">Save Product</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-            login(e) {
-                e.preventDefault();
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('admin-interface').classList.remove('hidden');
-                this.init();
-            },
+    <!-- Stock Update Modal -->
+    <div id="stock-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="adminApp.closeStockModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+            <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl pointer-events-auto p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Update Stock</h3>
+                    <button onclick="adminApp.closeStockModal()" class="p-2 hover:bg-gray-100 rounded-full"><i data-lucide="x" class="w-5 h-5 text-gray-600"></i></button>
+                </div>
+                <form id="stock-form" onsubmit="adminApp.updateStock(event)" class="space-y-4">
+                    <input type="hidden" id="stock-product-id">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Product</label>
+                        <p id="stock-product-name" class="px-4 py-2 bg-gray-100 rounded-lg text-gray-700 font-medium">Product Name</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Current Stock</label>
+                        <p id="stock-current" class="px-4 py-2 bg-gray-100 rounded-lg text-gray-700 font-medium">0</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Adjustment (+/-) *</label>
+                        <input type="number" id="stock-adjustment" required class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all" placeholder="Use negative for reduction, e.g., -5">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Reason *</label>
+                        <select id="stock-reason" required class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all">
+                            <option value="restock">Restock</option>
+                            <option value="sale">Sale</option>
+                            <option value="damaged">Damaged/Expired</option>
+                            <option value="return">Customer Return</option>
+                            <option value="adjustment">Inventory Adjustment</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-3 pt-4">
+                        <button type="button" onclick="adminApp.closeStockModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium">Cancel</button>
+                        <button type="submit" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">Update Stock</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-            logout() {
-                location.reload();
-            },
+    <!-- Toast Notification -->
+    <div id="admin-toast" class="fixed bottom-6 right-6 z-50 bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center space-x-3 transform translate-y-20 opacity-0 transition-all duration-300 max-w-sm">
+        <div id="toast-icon" class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0"><i data-lucide="check" class="w-5 h-5 text-white"></i></div>
+        <div class="flex-1 min-w-0">
+            <p class="font-semibold truncate" id="toast-title">Success</p>
+            <p class="text-sm text-gray-300 truncate" id="toast-message">Operation completed</p>
+        </div>
+    </div>
 
-            navigate(page) {
-                // Update sidebar
-                document.querySelectorAll('.sidebar-item').forEach(item => {
-                    item.classList.remove('active');
-                    if (item.dataset.page === page) {
-                        item.classList.add('active');
-                    }
-                });
-
-                // Hide all pages
-                document.querySelectorAll('.page-content').forEach(content => {
-                    content.classList.add('hidden');
-                });
-
-                // Show selected page
-                document.getElementById(`content-${page}`).classList.remove('hidden');
-                document.getElementById('page-title').textContent = page.charAt(0).toUpperCase() + page.slice(1);
-
-                // Close any open dropdowns
-                this.closeDropdowns();
-
-                // Refresh charts if analytics page
-                if (page === 'analytics') {
-                    setTimeout(() => this.initAnalyticsCharts(), 100);
-                }
-            },
-
-            toggleDatePicker() {
-                const dropdown = document.getElementById('date-dropdown');
-                dropdown.classList.toggle('hidden');
-            },
-
-            setDateRange(range) {
-                this.state.dateRange = range;
-                const labels = {
-                    'today': 'Today',
-                    'yesterday': 'Yesterday',
-                    '7days': 'Last 7 Days',
-                    '30days': 'Last 30 Days',
-                    'custom': 'Custom Range'
-                };
-                document.getElementById('date-range-label').textContent = labels[range];
-                this.toggleDatePicker();
-                
-                // Update charts with new data
-                this.updateCharts();
-            },
-
-            toggleNotifications() {
-                const dropdown = document.getElementById('notifications-dropdown');
-                dropdown.classList.toggle('hidden');
-            },
-
-            closeDropdowns() {
-                document.getElementById('date-dropdown').classList.add('hidden');
-                document.getElementById('notifications-dropdown').classList.add('hidden');
-            },
-
-            showQuickActions() {
-                alert('Quick Actions:\n\n1. Create New Order\n2. Add Product\n3. Generate Report\n4. Send Newsletter');
-            },
-
-            renderOrders() {
-                const recentTable = document.getElementById('recent-orders-table');
-                const allTable = document.getElementById('all-orders-table');
-
-                const getStatusBadge = (status) => {
-                    const classes = {
-                        'delivered': 'status-delivered',
-                        'pending': 'status-pending',
-                        'processing': 'status-processing',
-                        'cancelled': 'status-cancelled'
-                    };
-                    return `<span class="status-badge ${classes[status]}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>`;
-                };
-
-                const rows = this.state.orders.map(order => `
-                    <tr class="table-row">
-                        <td class="px-6 py-4 font-medium text-slate-900">${order.id}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <img src="${order.avatar}" alt="" class="w-8 h-8 rounded-full mr-3 object-cover">
-                                <div>
-                                    <p class="font-medium text-slate-900">${order.customer}</p>
-                                    <p class="text-xs text-slate-500">${order.email}</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-slate-600">${order.items} items</td>
-                        <td class="px-6 py-4 font-semibold text-slate-900">$${order.total.toFixed(2)}</td>
-                        <td class="px-6 py-4">${getStatusBadge(order.status)}</td>
-                        <td class="px-6 py-4 text-sm text-slate-500">${order.date}</td>
-                        <td class="px-6 py-4">
-                            <button class="text-slate-400 hover:text-green-600 transition-colors">
-                                <i data-lucide="more-vertical" class="w-5 h-5"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `).join('');
-
-                if (recentTable) recentTable.innerHTML = rows;
-                if (allTable) {
-                    allTable.innerHTML = this.state.orders.map(order => `
-                        <tr class="table-row">
-                            <td class="px-6 py-4">
-                                <input type="checkbox" class="rounded border-slate-300 text-green-600 focus:ring-green-500">
-                            </td>
-                            <td class="px-6 py-4 font-medium text-slate-900">${order.id}</td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center">
-                                    <img src="${order.avatar}" alt="" class="w-8 h-8 rounded-full mr-3 object-cover">
-                                    <span class="font-medium text-slate-900">${order.customer}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-sm text-slate-600">${order.items} items</td>
-                            <td class="px-6 py-4 font-semibold text-slate-900">$${order.total.toFixed(2)}</td>
-                            <td class="px-6 py-4"><span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">${order.payment}</span></td>
-                            <td class="px-6 py-4">${getStatusBadge(order.status)}</td>
-                            <td class="px-6 py-4 text-sm text-slate-500">${order.date}</td>
-                            <td class="px-6 py-4">
-                                <button class="text-slate-400 hover:text-green-600 transition-colors mr-2">
-                                    <i data-lucide="eye" class="w-4 h-4"></i>
-                                </button>
-                                <button class="text-slate-400 hover:text-blue-600 transition-colors">
-                                    <i data-lucide="edit" class="w-4 h-4"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `).join('');
-                }
-                
-                lucide.createIcons();
-            },
-
-            renderProducts() {
-                const table = document.getElementById('products-table');
-                if (!table) return;
-
-                table.innerHTML = this.state.products.map(product => {
-                    const stockPercent = Math.min((product.stock / 200) * 100, 100);
-                    const stockColor = product.stock < 20 ? 'bg-red-500' : product.stock < 50 ? 'bg-yellow-500' : 'bg-green-500';
-                    
-                    return `
-                    <tr class="table-row">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <img src="${product.image}" alt="" class="w-10 h-10 rounded-lg object-cover mr-3">
-                                <span class="font-medium text-slate-900">${product.name}</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-slate-600">${product.category}</td>
-                        <td class="px-6 py-4 font-medium text-slate-900">$${product.price.toFixed(2)}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <div class="w-16 bg-slate-200 rounded-full h-2 mr-2">
-                                    <div class="${stockColor} h-2 rounded-full" style="width: ${stockPercent}%"></div>
-                                </div>
-                                <span class="text-sm">${product.stock}</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="status-badge ${product.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-700'}">
-                                ${product.status.charAt(0).toUpperCase() + product.status.slice(1)}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-slate-600">${product.sales}</td>
-                        <td class="px-6 py-4">
-                            <button class="text-slate-400 hover:text-blue-600 transition-colors mr-2">
-                                <i data-lucide="edit" class="w-4 h-4"></i>
-                            </button>
-                            <button class="text-slate-400 hover:text-red-600 transition-colors">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `}).join('');
-                
-                lucide.createIcons();
-            },
-
-            generateHeatmap() {
-                const container = document.getElementById('sales-heatmap');
-                if (!container) return;
-
-                const hours = 24;
-                const days = 7;
-                const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                
-                let html = '';
-                
-                // Header row
-                html += '<div class="col-span-1"></div>';
-                for (let h = 0; h < hours; h += 2) {
-                    html += `<div class="text-xs text-slate-400 text-center">${h}:00</div>`;
-                }
-                
-                // Data rows
-                for (let d = 0; d < days; d++) {
-                    html += `<div class="text-xs text-slate-500 font-medium flex items-center">${dayLabels[d]}</div>`;
-                    for (let h = 0; h < hours; h += 2) {
-                        const intensity = Math.random();
-                        let colorClass = 'bg-slate-100';
-                        if (intensity > 0.8) colorClass = 'bg-green-600';
-                        else if (intensity > 0.6) colorClass = 'bg-green-500';
-                        else if (intensity > 0.4) colorClass = 'bg-green-400';
-                        else if (intensity > 0.2) colorClass = 'bg-green-300';
-                        else if (intensity > 0.1) colorClass = 'bg-green-200';
-                        else colorClass = 'bg-slate-100';
-                        
-                        html += `<div class="heatmap-cell ${colorClass} rounded-sm h-8 cursor-pointer" title="${dayLabels[d]} ${h}:00 - ${intensity > 0.5 ? 'High' : 'Low'} activity"></div>`;
-                    }
-                }
-                
-                container.innerHTML = html;
-            },
-
-            initCharts() {
-                // Revenue Chart
-                const revenueCtx = document.getElementById('revenueChart');
-                if (revenueCtx) {
-                    this.state.charts.revenue = new Chart(revenueCtx, {
-                        type: 'line',
-                        data: {
-                            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                            datasets: [{
-                                label: 'Revenue',
-                                data: [3200, 4500, 3800, 5200, 4800, 6100, 5800],
-                                borderColor: '#22c55e',
-                                backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                                borderWidth: 3,
-                                tension: 0.4,
-                                fill: true,
-                                pointBackgroundColor: '#22c55e',
-                                pointBorderColor: '#fff',
-                                pointBorderWidth: 2,
-                                pointRadius: 4,
-                                pointHoverRadius: 6
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    grid: { color: 'rgba(0,0,0,0.05)' },
-                                    ticks: {
-                                        callback: function(value) {
-                                            return '$' + value.toLocaleString();
-                                        }
-                                    }
-                                },
-                                x: {
-                                    grid: { display: false }
-                                }
-                            }
-                        }
-                    });
-                }
-
-                // Category Chart
-                const categoryCtx = document.getElementById('categoryChart');
-                if (categoryCtx) {
-                    this.state.charts.category = new Chart(categoryCtx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: ['Fruits', 'Vegetables', 'Organic'],
-                            datasets: [{
-                                data: [45, 35, 20],
-                                backgroundColor: ['#22c55e', '#34d399', '#2dd4bf'],
-                                borderWidth: 0,
-                                hoverOffset: 4
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            cutout: '70%',
-                            plugins: {
-                                legend: { display: false }
-                            }
-                        }
-                    });
-                }
-            },
-
-            initAnalyticsCharts() {
-                // Retention Chart
-                const retentionCtx = document.getElementById('retentionChart');
-                if (retentionCtx && !this.state.charts.retention) {
-                    this.state.charts.retention = new Chart(retentionCtx, {
-                        type: 'bar',
-                        data: {
-                            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                            datasets: [{
-                                label: 'Retention Rate',
-                                data: [100, 68, 45, 32],
-                                backgroundColor: '#22c55e',
-                                borderRadius: 4
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
-                            scales: {
-                                y: { beginAtZero: true, max: 100 }
-                            }
-                        }
-                    });
-                }
-
-                // Region Chart
-                const regionCtx = document.getElementById('regionChart');
-                if (regionCtx && !this.state.charts.region) {
-                    this.state.charts.region = new Chart(regionCtx, {
-                        type: 'bar',
-                        data: {
-                            labels: ['NY', 'CA', 'TX', 'FL', 'WA', 'Other'],
-                            datasets: [{
-                                label: 'Sales',
-                                data: [67234, 52891, 31456, 28900, 23400, 45600],
-                                backgroundColor: [
-                                    '#22c55e',
-                                    '#34d399',
-                                    '#2dd4bf',
-                                    '#5eead4',
-                                    '#99f6e4',
-                                    '#ccfbf1'
-                                ],
-                                borderRadius: 4
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
-                            scales: {
-                                y: {
-                                    ticks: {
-                                        callback: function(value) {
-                                            return '$' + (value / 1000) + 'k';
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-            },
-
-            updateCharts() {
-                // Simulate data update based on date range
-                const multiplier = this.state.dateRange === 'today' ? 0.2 : 
-                                 this.state.dateRange === '30days' ? 4 : 1;
-                
-                if (this.state.charts.revenue) {
-                    const newData = [3200, 4500, 3800, 5200, 4800, 6100, 5800].map(v => v * multiplier);
-                    this.state.charts.revenue.data.datasets[0].data = newData;
-                    this.state.charts.revenue.update();
-                }
-            },
-
-            startLiveUpdates() {
-                // Simulate live updates
-                setInterval(() => {
-                    // Randomly update KPIs slightly
-                    const revenue = document.getElementById('kpi-revenue');
-                    if (revenue) {
-                        const current = parseFloat(revenue.textContent.replace(/[$,]/g, ''));
-                        const change = (Math.random() - 0.5) * 10;
-                        revenue.textContent = '$' + (current + change).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-                    }
-                }, 5000);
-            },
-
-            showAddProductModal() {
-                alert('Add Product Modal:\n\nFields:\n- Product Name\n- Category\n- Price\n- Stock Quantity\n- Images\n- Description\n- SKU\n- Supplier');
-            }
-        };
-
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.relative')) {
-                app.closeDropdowns();
-            }
-        });
-
-        // Initialize on load if already logged in (for demo)
-        window.addEventListener('load', () => {
-            // Auto-login for demo purposes
-            setTimeout(() => {
-                if (document.getElementById('login-screen').classList.contains('hidden') === false) {
-                    // Uncomment below to auto-login for development
-                    // document.querySelector('form').dispatchEvent(new Event('submit'));
-                }
-            }, 500);
-        });
-    </script>
+    <script src="admin.js"></script>
 </body>
 </html>

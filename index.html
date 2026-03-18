@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FRESHBOX - Fresh Fruits & Vegetables Delivered</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body class="bg-gray-50 organic-pattern min-h-screen">
 
     <!-- Navigation -->
@@ -18,54 +23,74 @@
             <div class="flex justify-between items-center h-20">
                 <!-- Logo -->
                 <div class="flex items-center cursor-pointer" onclick="app.navigate('home')">
-                    <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mr-3 shadow-lg">
+                    <div
+                        class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mr-3 shadow-lg">
                         <i data-lucide="leaf" class="w-6 h-6 text-white"></i>
                     </div>
                     <span class="text-2xl font-bold text-gray-900 brand-font tracking-tight">FRESHBOX</span>
                 </div>
-
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex items-center space-x-8">
-                    <button onclick="app.navigate('home')" class="nav-link text-gray-700 hover:text-green-600 font-medium transition-colors">Home</button>
-                    <button onclick="app.scrollToProducts()" class="nav-link text-gray-700 hover:text-green-600 font-medium transition-colors">Shop</button>
-                    <button onclick="app.navigate('about')" class="nav-link text-gray-700 hover:text-green-600 font-medium transition-colors">About</button>
-                    <button onclick="app.navigate('contact')" class="nav-link text-gray-700 hover:text-green-600 font-medium transition-colors">Contact</button>
-                    <button onclick="app.navigate('orders')" id="nav-orders" class="nav-link text-gray-700 hover:text-green-600 font-medium transition-colors hidden">My Orders</button>
-                    <button onclick="app.navigate('admin')" id="nav-admin" class="nav-link text-gray-700 hover:text-green-600 font-medium transition-colors hidden">Admin</button>
+                    <button onclick="app.navigate('home')"
+                        class="nav-link text-gray-700 hover:text-green-600 font-medium transition-colors">Home</button>
+                    <button onclick="app.scrollToProducts()"
+                        class="nav-link text-gray-700 hover:text-green-600 font-medium transition-colors">Shop</button>
+                    <button onclick="app.navigate('about')"
+                        class="nav-link text-gray-700 hover:text-green-600 font-medium transition-colors">About</button>
+                    <button onclick="app.navigate('contact')"
+                        class="nav-link text-gray-700 hover:text-green-600 font-medium transition-colors">Contact</button>
+                    <button onclick="window.location.href='orders.html'" id="nav-orders"
+                        class="nav-link text-gray-700 hover:text-green-600 font-medium transition-colors hidden">My
+                        Orders</button>
+                    <button onclick="window.location.href='admin.html'" id="nav-admin"
+                        class="nav-link text-gray-700 hover:text-green-600 font-medium transition-colors hidden">Admin</button>
                 </div>
 
                 <!-- Right Icons -->
                 <div class="flex items-center space-x-4">
-                    <button class="p-2 hover:bg-gray-100 rounded-full transition-colors relative" onclick="app.toggleSearch()">
+                    <button class="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
+                        onclick="app.toggleSearch()">
                         <i data-lucide="search" class="w-5 h-5 text-gray-700"></i>
                     </button>
-                    
+
                     <!-- User Menu (Logged Out) -->
-                    <div id="user-menu" class="hidden md:flex items-center">
-                        <button onclick="app.toggleAuth()" class="text-gray-700 hover:text-green-600 font-medium transition-colors">Sign In</button>
+                    <div id="user-menu" class="flex items-center">
+                        <button onclick="app.toggleAuth()"
+                            class="text-gray-700 hover:text-green-600 font-medium transition-colors">Sign In</button>
                     </div>
-                    
+
                     <!-- User Menu (Logged In) -->
                     <div id="user-logged-in" class="hidden md:flex items-center space-x-4">
-                        <button class="p-2 hover:bg-gray-100 rounded-full transition-colors relative" onclick="app.toggleCart()">
+                        <button class="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
+                            onclick="app.toggleCart()">
                             <i data-lucide="shopping-bag" class="w-5 h-5 text-gray-700"></i>
-                            <span id="cart-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold cart-badge-pulse hidden">0</span>
+                            <span id="cart-badge"
+                                class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold cart-badge-pulse hidden">0</span>
                         </button>
                         <div class="relative group">
-                            <button class="flex items-center space-x-2 hover:bg-gray-100 rounded-full px-3 py-2 transition-colors">
-                                <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold" id="user-avatar">U</div>
+                            <button
+                                class="flex items-center space-x-2 hover:bg-gray-100 rounded-full px-3 py-2 transition-colors">
+                                <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold"
+                                    id="user-avatar">U</div>
                                 <span class="font-medium text-gray-700 hidden lg:block" id="user-name">User</span>
                                 <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500"></i>
                             </button>
-                            <div class="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                                <a href="#" onclick="app.navigate('orders')" class="block px-4 py-3 hover:bg-gray-50 rounded-t-xl text-sm font-medium">My Orders</a>
-                                <a href="#" onclick="app.navigate('profile')" class="block px-4 py-3 hover:bg-gray-50 text-sm font-medium">Profile</a>
-                                <button onclick="app.signOut()" class="block w-full text-left px-4 py-3 hover:bg-gray-50 rounded-b-xl text-red-600 text-sm font-medium">Sign Out</button>
+                            <div
+                                class="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                                <a href="orders.html"
+                                    class="block px-4 py-3 hover:bg-gray-50 rounded-t-xl text-sm font-medium">My
+                                    Orders</a>
+                                <a href="orders.html#profile"
+                                    class="block px-4 py-3 hover:bg-gray-50 text-sm font-medium">Profile</a>
+                                <button onclick="app.signOut()"
+                                    class="block w-full text-left px-4 py-3 hover:bg-gray-50 rounded-b-xl text-red-600 text-sm font-medium">Sign
+                                    Out</button>
                             </div>
                         </div>
                     </div>
-                    
-                    <button class="md:hidden p-2 hover:bg-gray-100 rounded-full transition-colors" onclick="app.toggleMobileMenu()">
+
+                    <button class="md:hidden p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        onclick="app.toggleMobileMenu()">
                         <i data-lucide="menu" class="w-5 h-5 text-gray-700"></i>
                     </button>
                 </div>
@@ -73,12 +98,14 @@
         </div>
 
         <!-- Search Bar -->
-        <div id="search-bar" class="hidden absolute top-full left-0 w-full bg-white border-b border-gray-200 p-4 shadow-lg">
+        <div id="search-bar"
+            class="hidden absolute top-full left-0 w-full bg-white border-b border-gray-200 p-4 shadow-lg">
             <div class="max-w-3xl mx-auto relative">
-                <i data-lucide="search" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
-                <input type="text" placeholder="Search for fresh fruits, vegetables..." 
-                       class="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all"
-                       oninput="app.handleSearch(this.value)">
+                <i data-lucide="search"
+                    class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                <input type="text" placeholder="Search for fresh fruits, vegetables..."
+                    class="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all"
+                    oninput="app.handleSearch(this.value)">
             </div>
         </div>
     </nav>
@@ -86,26 +113,41 @@
     <!-- Mobile Menu -->
     <div id="mobile-menu" class="fixed inset-0 z-40 hidden">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="app.toggleMobileMenu()"></div>
-        <div class="absolute right-0 top-0 h-full w-64 bg-white shadow-2xl p-6 transform transition-transform duration-300 translate-x-full" id="mobile-menu-panel">
+        <div class="absolute right-0 top-0 h-full w-64 bg-white shadow-2xl p-6 transform transition-transform duration-300 translate-x-full"
+            id="mobile-menu-panel">
             <button class="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full" onclick="app.toggleMobileMenu()">
                 <i data-lucide="x" class="w-6 h-6"></i>
             </button>
             <div class="mt-12 space-y-4" id="mobile-menu-items">
-                <button onclick="app.navigate('home'); app.toggleMobileMenu()" class="block w-full text-left py-3 text-lg font-medium text-gray-800 hover:text-green-600">Home</button>
-                <button onclick="app.scrollToProducts(); app.toggleMobileMenu()" class="block w-full text-left py-3 text-lg font-medium text-gray-800 hover:text-green-600">Shop</button>
-                <button onclick="app.navigate('about'); app.toggleMobileMenu()" class="block w-full text-left py-3 text-lg font-medium text-gray-800 hover:text-green-600">About</button>
-                <button onclick="app.navigate('contact'); app.toggleMobileMenu()" class="block w-full text-left py-3 text-lg font-medium text-gray-800 hover:text-green-600">Contact</button>
+                <button onclick="app.navigate('home'); app.toggleMobileMenu()"
+                    class="block w-full text-left py-3 text-lg font-medium text-gray-800 hover:text-green-600">Home</button>
+                <button onclick="app.scrollToProducts(); app.toggleMobileMenu()"
+                    class="block w-full text-left py-3 text-lg font-medium text-gray-800 hover:text-green-600">Shop</button>
+                <button onclick="app.navigate('about'); app.toggleMobileMenu()"
+                    class="block w-full text-left py-3 text-lg font-medium text-gray-800 hover:text-green-600">About</button>
+                <button onclick="app.navigate('contact'); app.toggleMobileMenu()"
+                    class="block w-full text-left py-3 text-lg font-medium text-gray-800 hover:text-green-600">Contact</button>
+
+                <button onclick="window.location.href='orders.html'" id="mobile-orders"
+                    class="hidden block w-full text-left py-3 text-lg font-medium text-gray-800 hover:text-green-600">My
+                    Orders</button>
+
                 <div id="mobile-auth-section">
-                    <button onclick="app.toggleAuth(); app.toggleMobileMenu()" class="block w-full text-left py-3 text-lg font-medium text-green-600 hover:text-green-700">Sign In / Sign Up</button>
+                    <button onclick="app.toggleAuth(); app.toggleMobileMenu()"
+                        class="block w-full text-left py-3 text-lg font-medium text-green-600 hover:text-green-700">Sign
+                        In / Sign Up</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Cart Sidebar -->
-    <div id="cart-overlay" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm transition-opacity" onclick="app.toggleCart()"></div>
-    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full sm:w-[450px] bg-white z-50 cart-sidebar shadow-2xl flex flex-col">
-        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-green-50 to-white">
+    <div id="cart-overlay" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm transition-opacity"
+        onclick="app.toggleCart()"></div>
+    <div id="cart-sidebar"
+        class="fixed top-0 right-0 h-full w-full sm:w-[450px] bg-white z-50 cart-sidebar shadow-2xl flex flex-col">
+        <div
+            class="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-green-50 to-white">
             <div>
                 <h2 class="text-2xl font-bold text-gray-900 brand-font">Your Cart</h2>
                 <p class="text-sm text-gray-500 mt-1"><span id="cart-count-header">0</span> items selected</p>
@@ -119,7 +161,8 @@
             <div class="text-center py-12 text-gray-400">
                 <i data-lucide="shopping-bag" class="w-16 h-16 mx-auto mb-4 opacity-30"></i>
                 <p>Your cart is empty</p>
-                <button onclick="app.toggleCart(); app.scrollToProducts()" class="mt-4 text-green-600 font-medium hover:underline">Start Shopping</button>
+                <button onclick="app.toggleCart(); app.scrollToProducts()"
+                    class="mt-4 text-green-600 font-medium hover:underline">Start Shopping</button>
             </div>
         </div>
 
@@ -138,10 +181,13 @@
                     <span id="cart-total">$0.00</span>
                 </div>
             </div>
-            <button onclick="app.checkout()" id="checkout-btn" class="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            <button onclick="app.checkout()" id="checkout-btn"
+                class="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled>
                 Proceed to Checkout
             </button>
-            <button onclick="app.toggleCart()" class="w-full mt-3 text-gray-600 font-medium py-2 hover:text-gray-900 transition-colors">
+            <button onclick="app.toggleCart()"
+                class="w-full mt-3 text-gray-600 font-medium py-2 hover:text-gray-900 transition-colors">
                 Continue Shopping
             </button>
         </div>
@@ -158,23 +204,27 @@
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
-                
+
                 <!-- Sign In Form -->
                 <form id="signin-form" onsubmit="app.handleSignIn(event)" class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                        <input type="email" name="email" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                        <input type="email" name="email" required
+                            class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                        <input type="password" name="password" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                        <input type="password" name="password" required
+                            class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
                     </div>
-                    <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
+                    <button type="submit"
+                        class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
                         Sign In
                     </button>
                     <p class="text-center text-sm text-gray-600">
-                        Don't have an account? 
-                        <button type="button" onclick="app.toggleAuthMode('signup')" class="text-green-600 font-medium">Sign Up</button>
+                        Don't have an account?
+                        <button type="button" onclick="app.toggleAuthMode('signup')"
+                            class="text-green-600 font-medium">Sign Up</button>
                     </p>
                 </form>
 
@@ -182,22 +232,27 @@
                 <form id="signup-form" onsubmit="app.handleSignUp(event)" class="space-y-4 hidden">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                        <input type="text" name="full_name" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                        <input type="text" name="full_name" required
+                            class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                        <input type="email" name="email" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                        <input type="email" name="email" required
+                            class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                        <input type="password" name="password" required minlength="6" class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                        <input type="password" name="password" required minlength="6"
+                            class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
                     </div>
-                    <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
+                    <button type="submit"
+                        class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
                         Create Account
                     </button>
                     <p class="text-center text-sm text-gray-600">
-                        Already have an account? 
-                        <button type="button" onclick="app.toggleAuthMode('signin')" class="text-green-600 font-medium">Sign In</button>
+                        Already have an account?
+                        <button type="button" onclick="app.toggleAuthMode('signin')"
+                            class="text-green-600 font-medium">Sign In</button>
                     </p>
                 </form>
             </div>
@@ -205,7 +260,8 @@
     </div>
 
     <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-6 right-6 z-50 bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center space-x-3 toast max-w-sm">
+    <div id="toast"
+        class="fixed bottom-6 right-6 z-50 bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center space-x-3 toast max-w-sm">
         <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
             <i data-lucide="check" class="w-5 h-5 text-white"></i>
         </div>
@@ -217,38 +273,45 @@
 
     <!-- Main Content -->
     <main id="main-content" class="pt-20">
-        
+
         <!-- Hero Section -->
         <section id="hero" class="relative min-h-[90vh] flex items-center overflow-hidden">
             <div class="absolute inset-0 bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700"></div>
             <div class="absolute inset-0 opacity-20">
-                <div class="absolute top-20 left-10 w-72 h-72 bg-white rounded-full mix-blend-overlay filter blur-3xl animate-float"></div>
-                <div class="absolute bottom-20 right-10 w-96 h-96 bg-yellow-300 rounded-full mix-blend-overlay filter blur-3xl animate-float" style="animation-delay: 1s;"></div>
+                <div
+                    class="absolute top-20 left-10 w-72 h-72 bg-white rounded-full mix-blend-overlay filter blur-3xl animate-float">
+                </div>
+                <div class="absolute bottom-20 right-10 w-96 h-96 bg-yellow-300 rounded-full mix-blend-overlay filter blur-3xl animate-float"
+                    style="animation-delay: 1s;"></div>
             </div>
-            
+
             <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 grid md:grid-cols-2 gap-12 items-center">
                 <div class="animate-fade-in">
-                    <div class="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white text-sm font-medium mb-6 border border-white/30">
+                    <div
+                        class="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white text-sm font-medium mb-6 border border-white/30">
                         <i data-lucide="truck" class="w-4 h-4 mr-2"></i>
-                        Free Delivery on Orders Over $35
+                        Free Delivery on Orders Over ₹500
                     </div>
                     <h1 class="text-5xl md:text-7xl font-bold text-white leading-tight mb-6 brand-font">
                         Nature's Best<br>
                         <span class="text-yellow-300">Delivered Fresh</span>
                     </h1>
                     <p class="text-xl text-green-50 mb-8 max-w-lg leading-relaxed">
-                        Farm-fresh fruits and vegetables delivered to your doorstep within 24 hours. Organic, sustainable, and always in season.
+                        Farm-fresh fruits and vegetables delivered to your doorstep within 24 hours. Organic,
+                        sustainable, and always in season.
                     </p>
                     <div class="flex flex-wrap gap-4">
-                        <button onclick="app.scrollToProducts()" class="bg-white text-green-700 px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center">
+                        <button onclick="app.scrollToProducts()"
+                            class="bg-white text-green-700 px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center">
                             Shop Now
                             <i data-lucide="arrow-right" class="w-5 h-5 ml-2"></i>
                         </button>
-                        <button onclick="app.navigate('about')" class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition-all">
+                        <button onclick="app.navigate('about')"
+                            class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition-all">
                             Learn More
                         </button>
                     </div>
-                    
+
                     <div class="mt-12 flex items-center space-x-8 text-white/80">
                         <div class="flex items-center">
                             <i data-lucide="check-circle" class="w-5 h-5 mr-2 text-yellow-300"></i>
@@ -264,13 +327,19 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="relative hidden md:block">
                     <div class="relative z-10 grid grid-cols-2 gap-4 animate-float">
-                        <img src="https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=400&h=500&fit=crop" alt="Fresh Vegetables" class="rounded-3xl shadow-2xl transform translate-y-8 object-cover w-full h-64">
-                        <img src="https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=400&h=500&fit=crop" alt="Fresh Fruits" class="rounded-3xl shadow-2xl object-cover w-full h-64">
-                        <img src="https://images.unsplash.com/photo-1566842600175-97dca489844f?w=400&h=500&fit=crop" alt="Organic Produce" class="rounded-3xl shadow-2xl object-cover w-full h-64">
-                        <img src="https://images.unsplash.com/photo-1597362925123-77861d3fbac7?w=400&h=500&fit=crop" alt="Healthy Food" class="rounded-3xl shadow-2xl transform -translate-y-8 object-cover w-full h-64">
+                        <img src="https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=400&h=500&fit=crop"
+                            alt="Fresh Vegetables"
+                            class="rounded-3xl shadow-2xl transform translate-y-8 object-cover w-full h-64">
+                        <img src="https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=400&h=500&fit=crop"
+                            alt="Fresh Fruits" class="rounded-3xl shadow-2xl object-cover w-full h-64">
+                        <img src="https://images.unsplash.com/photo-1566842600175-97dca489844f?w=400&h=500&fit=crop"
+                            alt="Organic Produce" class="rounded-3xl shadow-2xl object-cover w-full h-64">
+                        <img src="https://images.unsplash.com/photo-1597362925123-77861d3fbac7?w=400&h=500&fit=crop"
+                            alt="Healthy Food"
+                            class="rounded-3xl shadow-2xl transform -translate-y-8 object-cover w-full h-64">
                     </div>
                     <div class="absolute inset-0 bg-gradient-to-t from-green-600/50 to-transparent rounded-3xl"></div>
                 </div>
@@ -281,8 +350,10 @@
         <section class="bg-white border-b border-gray-200">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    <div class="flex items-center space-x-3 p-4 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
-                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+                    <div
+                        class="flex items-center space-x-3 p-4 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
+                        <div
+                            class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600">
                             <i data-lucide="leaf" class="w-6 h-6"></i>
                         </div>
                         <div>
@@ -290,7 +361,8 @@
                             <p class="text-sm text-gray-500">Certified produce</p>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-3 p-4 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
+                    <div
+                        class="flex items-center space-x-3 p-4 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
                         <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
                             <i data-lucide="clock" class="w-6 h-6"></i>
                         </div>
@@ -299,8 +371,10 @@
                             <p class="text-sm text-gray-500">Morning delivery</p>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-3 p-4 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
-                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
+                    <div
+                        class="flex items-center space-x-3 p-4 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
+                        <div
+                            class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
                             <i data-lucide="refresh-cw" class="w-6 h-6"></i>
                         </div>
                         <div>
@@ -308,8 +382,10 @@
                             <p class="text-sm text-gray-500">No questions asked</p>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-3 p-4 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
-                        <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
+                    <div
+                        class="flex items-center space-x-3 p-4 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
+                        <div
+                            class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
                             <i data-lucide="shield-check" class="w-6 h-6"></i>
                         </div>
                         <div>
@@ -326,24 +402,35 @@
             <div class="text-center mb-12">
                 <span class="text-green-600 font-semibold tracking-wider uppercase text-sm">Our Collection</span>
                 <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mt-2 mb-4 brand-font">Fresh From The Farm</h2>
-                <p class="text-gray-600 max-w-2xl mx-auto text-lg">Hand-picked daily from local organic farms. Every item is inspected for quality and freshness before reaching your kitchen.</p>
+                <p class="text-gray-600 max-w-2xl mx-auto text-lg">Hand-picked daily from local organic farms. Every
+                    item is inspected for quality and freshness before reaching your kitchen.</p>
             </div>
 
             <!-- Category Filter -->
             <div class="flex flex-wrap justify-center gap-3 mb-12">
-                <button onclick="app.filterCategory('all')" class="category-pill active px-6 py-3 rounded-full border border-gray-200 font-medium transition-all hover:shadow-md" data-category="all">
+                <button onclick="app.filterCategory('all')"
+                    class="category-pill active px-6 py-3 rounded-full border border-gray-200 font-medium transition-all hover:shadow-md"
+                    data-category="all">
                     All Items
                 </button>
-                <button onclick="app.filterCategory('fruits')" class="category-pill px-6 py-3 rounded-full border border-gray-200 font-medium transition-all hover:shadow-md" data-category="fruits">
+                <button onclick="app.filterCategory('fruits')"
+                    class="category-pill px-6 py-3 rounded-full border border-gray-200 font-medium transition-all hover:shadow-md"
+                    data-category="fruits">
                     <i data-lucide="apple" class="w-4 h-4 inline mr-2"></i>Fruits
                 </button>
-                <button onclick="app.filterCategory('vegetables')" class="category-pill px-6 py-3 rounded-full border border-gray-200 font-medium transition-all hover:shadow-md" data-category="vegetables">
+                <button onclick="app.filterCategory('vegetables')"
+                    class="category-pill px-6 py-3 rounded-full border border-gray-200 font-medium transition-all hover:shadow-md"
+                    data-category="vegetables">
                     <i data-lucide="carrot" class="w-4 h-4 inline mr-2"></i>Vegetables
                 </button>
-                <button onclick="app.filterCategory('organic')" class="category-pill px-6 py-3 rounded-full border border-gray-200 font-medium transition-all hover:shadow-md" data-category="organic">
+                <button onclick="app.filterCategory('organic')"
+                    class="category-pill px-6 py-3 rounded-full border border-gray-200 font-medium transition-all hover:shadow-md"
+                    data-category="organic">
                     <i data-lucide="award" class="w-4 h-4 inline mr-2"></i>Organic
                 </button>
-                <button onclick="app.filterCategory('bundles')" class="category-pill px-6 py-3 rounded-full border border-gray-200 font-medium transition-all hover:shadow-md" data-category="bundles">
+                <button onclick="app.filterCategory('bundles')"
+                    class="category-pill px-6 py-3 rounded-full border border-gray-200 font-medium transition-all hover:shadow-md"
+                    data-category="bundles">
                     <i data-lucide="package" class="w-4 h-4 inline mr-2"></i>Bundles
                 </button>
             </div>
@@ -369,11 +456,12 @@
         <section id="admin-section" class="hidden py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center mb-8">
                 <h2 class="text-4xl font-bold text-gray-900 brand-font">Admin Dashboard</h2>
-                <button onclick="app.openAddProductModal()" class="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
+                <button onclick="app.openAddProductModal()"
+                    class="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
                     <i data-lucide="plus" class="w-4 h-4 inline mr-2"></i>Add Product
                 </button>
             </div>
-            
+
             <!-- Admin Stats -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
@@ -404,7 +492,8 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order #</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer
+                                </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
@@ -422,11 +511,14 @@
         <!-- Special Offer Banner -->
         <section class="py-20 bg-gradient-to-r from-orange-500 to-red-500 relative overflow-hidden">
             <div class="absolute inset-0 opacity-20">
-                <div class="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
+                <div
+                    class="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]">
+                </div>
             </div>
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
                 <h2 class="text-4xl md:text-6xl font-bold text-white mb-6 brand-font">Summer Harvest Sale</h2>
-                <p class="text-xl text-white/90 mb-8 max-w-2xl mx-auto">Get 20% off all organic berries and stone fruits this week. Limited time offer!</p>
+                <p class="text-xl text-white/90 mb-8 max-w-2xl mx-auto">Get 20% off all organic berries and stone fruits
+                    this week. Limited time offer!</p>
                 <div class="flex flex-wrap justify-center gap-4 text-white">
                     <div class="bg-white/20 backdrop-blur-sm rounded-xl px-6 py-3">
                         <span class="block text-3xl font-bold" id="countdown-days">02</span>
@@ -457,9 +549,11 @@
                             <i data-lucide="star" class="w-5 h-5 fill-current"></i>
                             <i data-lucide="star" class="w-5 h-5 fill-current"></i>
                         </div>
-                        <p class="text-gray-700 mb-6 italic">"The quality of vegetables is outstanding. My family has been eating healthier since we started using FRESHBOX. The delivery is always on time!"</p>
+                        <p class="text-gray-700 mb-6 italic">"The quality of vegetables is outstanding. My family has
+                            been eating healthier since we started using FRESHBOX. The delivery is always on time!"</p>
                         <div class="flex items-center">
-                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" alt="Customer" class="w-12 h-12 rounded-full object-cover mr-4">
+                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop"
+                                alt="Customer" class="w-12 h-12 rounded-full object-cover mr-4">
                             <div>
                                 <h4 class="font-semibold text-gray-900">Sarah Mitchell</h4>
                                 <p class="text-sm text-gray-500">Regular Customer</p>
@@ -474,9 +568,11 @@
                             <i data-lucide="star" class="w-5 h-5 fill-current"></i>
                             <i data-lucide="star" class="w-5 h-5 fill-current"></i>
                         </div>
-                        <p class="text-gray-700 mb-6 italic">"I love the variety of exotic fruits available. The mangoes and dragon fruits are always perfectly ripe. Best online grocer I've used."</p>
+                        <p class="text-gray-700 mb-6 italic">"I love the variety of exotic fruits available. The mangoes
+                            and dragon fruits are always perfectly ripe. Best online grocer I've used."</p>
                         <div class="flex items-center">
-                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" alt="Customer" class="w-12 h-12 rounded-full object-cover mr-4">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop"
+                                alt="Customer" class="w-12 h-12 rounded-full object-cover mr-4">
                             <div>
                                 <h4 class="font-semibold text-gray-900">James Chen</h4>
                                 <p class="text-sm text-gray-500">Food Enthusiast</p>
@@ -491,9 +587,11 @@
                             <i data-lucide="star" class="w-5 h-5 fill-current"></i>
                             <i data-lucide="star" class="w-5 h-5 fill-current"></i>
                         </div>
-                        <p class="text-gray-700 mb-6 italic">"As a restaurant owner, I need consistent quality. FRESHBOX delivers exactly that. Their bulk ordering system is seamless and reliable."</p>
+                        <p class="text-gray-700 mb-6 italic">"As a restaurant owner, I need consistent quality. FRESHBOX
+                            delivers exactly that. Their bulk ordering system is seamless and reliable."</p>
                         <div class="flex items-center">
-                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" alt="Customer" class="w-12 h-12 rounded-full object-cover mr-4">
+                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop"
+                                alt="Customer" class="w-12 h-12 rounded-full object-cover mr-4">
                             <div>
                                 <h4 class="font-semibold text-gray-900">Michael Torres</h4>
                                 <p class="text-sm text-gray-500">Chef & Restaurateur</p>
@@ -508,11 +606,13 @@
         <section class="py-20 bg-gray-900 text-white">
             <div class="max-w-4xl mx-auto px-4 text-center">
                 <h2 class="text-3xl md:text-4xl font-bold mb-4 brand-font">Stay Fresh</h2>
-                <p class="text-gray-400 mb-8 text-lg">Subscribe to get exclusive offers, seasonal recipes, and early access to new products.</p>
+                <p class="text-gray-400 mb-8 text-lg">Subscribe to get exclusive offers, seasonal recipes, and early
+                    access to new products.</p>
                 <form onsubmit="app.handleSubscribe(event)" class="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
                     <input type="email" placeholder="Enter your email" required
-                           class="flex-1 px-6 py-4 rounded-full bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors">
-                    <button type="submit" class="px-8 py-4 bg-green-600 hover:bg-green-500 rounded-full font-semibold transition-colors flex items-center justify-center">
+                        class="flex-1 px-6 py-4 rounded-full bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors">
+                    <button type="submit"
+                        class="px-8 py-4 bg-green-600 hover:bg-green-500 rounded-full font-semibold transition-colors flex items-center justify-center">
                         Subscribe
                         <i data-lucide="send" class="w-4 h-4 ml-2"></i>
                     </button>
@@ -525,11 +625,12 @@
     <div id="checkout-modal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="app.closeCheckout()"></div>
         <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
-            <div class="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl pointer-events-auto animate-fade-in">
+            <div
+                class="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl pointer-events-auto animate-fade-in">
                 <div class="sticky top-0 bg-white border-b border-gray-100 p-6 flex justify-between items-center z-10">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-900 brand-font">Checkout</h2>
-                        <p class="text-sm text-gray-500">Complete your order in 3 easy steps</p>
+                        <p class="text-sm text-gray-500">Complete your order in 2 easy steps</p>
                     </div>
                     <button onclick="app.closeCheckout()" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
                         <i data-lucide="x" class="w-6 h-6 text-gray-600"></i>
@@ -539,15 +640,18 @@
                 <!-- Progress Steps -->
                 <div class="flex justify-center items-center p-6 border-b border-gray-100">
                     <div class="flex items-center space-x-4">
-                        <div class="progress-step active w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all" data-step="1">1</div>
+
+                        <div class="progress-step active w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all"
+                            data-step="1">1</div>
+
                         <div class="w-12 h-1 bg-gray-200 rounded-full overflow-hidden">
-                            <div class="h-full bg-green-600 transition-all duration-500" id="progress-bar-1" style="width: 0%"></div>
+                            <div class="h-full bg-green-600 transition-all duration-500" id="progress-bar-1"
+                                style="width: 0%"></div>
                         </div>
-                        <div class="progress-step w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-semibold text-sm text-gray-600 transition-all" data-step="2">2</div>
-                        <div class="w-12 h-1 bg-gray-200 rounded-full overflow-hidden">
-                            <div class="h-full bg-green-600 transition-all duration-500" id="progress-bar-2" style="width: 0%"></div>
-                        </div>
-                        <div class="progress-step w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-semibold text-sm text-gray-600 transition-all" data-step="3">3</div>
+
+                        <div class="progress-step w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-semibold text-sm text-gray-600 transition-all"
+                            data-step="2">2</div>
+
                     </div>
                 </div>
 
@@ -557,140 +661,62 @@
                     <form id="delivery-form" class="space-y-4">
                         <div class="grid md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                                <input type="text" name="first_name" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="John">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                                <input type="text" name="first_name" required
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all"
+                                    placeholder="John">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                                <input type="text" name="last_name" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="Doe">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                                <input type="email" name="email" required
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all"
+                                    placeholder="john@example.com">
                             </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                            <input type="email" name="email" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="john@example.com">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                            <input type="tel" name="phone" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="+1 (555) 000-0000">
+                            <input type="tel" name="phone" required
+                                class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all"
+                                placeholder="+1 (555) 000-0000">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
-                            <input type="text" name="address" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="123 Fresh Street">
+                            <input type="text" name="address" required
+                                class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all"
+                                placeholder="123 Fresh Street">
                         </div>
                         <div class="grid md:grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
-                                <input type="text" name="city" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="New York">
+                                <input type="text" name="city" required
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all"
+                                    placeholder="New York">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
-                                <input type="text" name="state" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="NY">
+                                <input type="text" name="state" required
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all"
+                                    placeholder="NY">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
-                                <input type="text" name="zip" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="10001">
+                                <input type="text" name="zip" required
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all"
+                                    placeholder="10001">
                             </div>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Instructions (Optional)</label>
-                            <textarea name="instructions" class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all h-24 resize-none" placeholder="Leave at door, ring bell, etc."></textarea>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Instructions
+                                (Optional)</label>
+                            <textarea name="instructions"
+                                class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all h-24 resize-none"
+                                placeholder="Leave at door, ring bell, etc."></textarea>
                         </div>
                     </form>
                     <div class="mt-6 flex justify-end">
-                        <button onclick="app.nextCheckoutStep(2)" class="bg-green-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center">
+                        <button onclick="app.nextCheckoutStep(3)"
+                            class="bg-green-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center">
                             Continue to Payment
-                            <i data-lucide="arrow-right" class="w-5 h-5 ml-2"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Step 2: Payment -->
-                <div id="checkout-step-2" class="p-6 hidden">
-                    <h3 class="text-lg font-semibold mb-4">Payment Method</h3>
-                    
-                    <div class="space-y-3 mb-6">
-                        <div class="payment-method selected border-2 border-gray-200 rounded-xl p-4 cursor-pointer transition-all hover:border-green-400" onclick="app.selectPayment('card')">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                                        <i data-lucide="credit-card" class="w-6 h-6 text-blue-600"></i>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900">Credit / Debit Card</p>
-                                        <p class="text-sm text-gray-500">Visa, Mastercard, Amex</p>
-                                    </div>
-                                </div>
-                                <div class="w-6 h-6 rounded-full border-2 border-green-600 bg-green-600 flex items-center justify-center payment-check">
-                                    <i data-lucide="check" class="w-4 h-4 text-white"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="payment-method border-2 border-gray-200 rounded-xl p-4 cursor-pointer transition-all hover:border-green-400" onclick="app.selectPayment('paypal')">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mr-4">
-                                        <i data-lucide="wallet" class="w-6 h-6 text-blue-800"></i>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900">PayPal</p>
-                                        <p class="text-sm text-gray-500">Fast and secure</p>
-                                    </div>
-                                </div>
-                                <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center payment-check"></div>
-                            </div>
-                        </div>
-
-                        <div class="payment-method border-2 border-gray-200 rounded-xl p-4 cursor-pointer transition-all hover:border-green-400" onclick="app.selectPayment('apple')">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
-                                        <i data-lucide="smartphone" class="w-6 h-6 text-gray-900"></i>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900">Apple Pay</p>
-                                        <p class="text-sm text-gray-500">Quick checkout</p>
-                                    </div>
-                                </div>
-                                <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center payment-check"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="card-details" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
-                            <div class="relative">
-                                <input type="text" class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all pl-12" placeholder="1234 5678 9012 3456" maxlength="19" oninput="app.formatCardNumber(this)">
-                                <i data-lucide="credit-card" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
-                                <input type="text" class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="MM/YY" maxlength="5" oninput="app.formatExpiry(this)">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">CVC</label>
-                                <div class="relative">
-                                    <input type="text" class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="123" maxlength="3">
-                                    <i data-lucide="help-circle" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 cursor-help" title="3 digits on back of card"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Name on Card</label>
-                            <input type="text" class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none transition-all" placeholder="John Doe">
-                        </div>
-                    </div>
-
-                    <div class="mt-6 flex justify-between">
-                        <button onclick="app.prevCheckoutStep(1)" class="text-gray-600 font-medium hover:text-gray-900 transition-colors flex items-center">
-                            <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
-                            Back
-                        </button>
-                        <button onclick="app.nextCheckoutStep(3)" class="bg-green-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center">
-                            Review Order
                             <i data-lucide="arrow-right" class="w-5 h-5 ml-2"></i>
                         </button>
                     </div>
@@ -699,7 +725,7 @@
                 <!-- Step 3: Review -->
                 <div id="checkout-step-3" class="p-6 hidden">
                     <h3 class="text-lg font-semibold mb-4">Review Your Order</h3>
-                    
+
                     <div class="bg-gray-50 rounded-xl p-4 mb-6 max-h-48 overflow-y-auto" id="review-items"></div>
 
                     <div class="border-t border-gray-200 pt-4 mb-6">
@@ -725,16 +751,19 @@
                         <i data-lucide="truck" class="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0"></i>
                         <div>
                             <p class="font-medium text-green-900">Free Delivery</p>
-                            <p class="text-sm text-green-700">Your order will be delivered tomorrow between 8:00 AM - 12:00 PM</p>
+                            <p class="text-sm text-green-700">Your order will be delivered tomorrow between 8:00 AM -
+                                12:00 PM</p>
                         </div>
                     </div>
 
                     <div class="mt-6 flex justify-between">
-                        <button onclick="app.prevCheckoutStep(2)" class="text-gray-600 font-medium hover:text-gray-900 transition-colors flex items-center">
+                        <button onclick="app.prevCheckoutStep(2)"
+                            class="text-gray-600 font-medium hover:text-gray-900 transition-colors flex items-center">
                             <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
                             Back
                         </button>
-                        <button onclick="app.placeOrder()" id="place-order-btn" class="bg-green-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center shadow-lg hover:shadow-xl transform hover:scale-105">
+                        <button onclick="app.placeOrder()" id="place-order-btn"
+                            class="bg-green-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center shadow-lg hover:shadow-xl transform hover:scale-105">
                             <span id="order-btn-text">Place Order</span>
                             <div id="order-loader" class="loader ml-2 hidden border-white border-t-transparent"></div>
                         </button>
@@ -743,11 +772,13 @@
 
                 <!-- Success State -->
                 <div id="checkout-success" class="p-12 text-center hidden">
-                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
+                    <div
+                        class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
                         <i data-lucide="check" class="w-10 h-10 text-green-600"></i>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-2">Order Placed Successfully!</h3>
-                    <p class="text-gray-600 mb-6">Thank you for shopping with FRESHBOX. Your order has been confirmed.</p>
+                    <p class="text-gray-600 mb-6">Thank you for shopping with FRESHBOX. Your order has been confirmed.
+                    </p>
                     <div class="bg-gray-50 rounded-xl p-6 mb-6 text-left max-w-md mx-auto">
                         <div class="flex justify-between mb-2">
                             <span class="text-gray-500">Order Number</span>
@@ -762,7 +793,8 @@
                             <span class="font-bold text-green-600" id="success-total">$0.00</span>
                         </div>
                     </div>
-                    <button onclick="app.closeCheckout(); app.clearCart()" class="bg-green-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
+                    <button onclick="app.closeCheckout(); app.clearCart()"
+                        class="bg-green-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
                         Continue Shopping
                     </button>
                 </div>
@@ -784,12 +816,14 @@
                 <form id="add-product-form" onsubmit="app.handleAddProduct(event)" class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-                        <input type="text" name="name" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                        <input type="text" name="name" required
+                            class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                            <select name="category" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                            <select name="category" required
+                                class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
                                 <option value="fruits">Fruits</option>
                                 <option value="vegetables">Vegetables</option>
                                 <option value="bundles">Bundles</option>
@@ -797,31 +831,37 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
-                            <input type="number" name="price" step="0.01" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                            <input type="number" name="price" step="0.01" required
+                                class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
-                            <input type="text" name="unit" placeholder="each, lb, bunch" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                            <input type="text" name="unit" placeholder="each, lb, bunch" required
+                                class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Stock</label>
-                            <input type="number" name="stock" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                            <input type="number" name="stock" required
+                                class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
                         </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                        <input type="url" name="image" required class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
+                        <input type="url" name="image" required
+                            class="w-full px-4 py-3 rounded-xl border border-gray-200 input-focus outline-none">
                     </div>
                     <div class="flex items-center space-x-4">
                         <label class="flex items-center">
                             <input type="checkbox" name="organic" class="w-4 h-4 text-green-600 rounded">
                             <span class="ml-2 text-sm text-gray-700">Organic</span>
                         </label>
-                        <input type="text" name="badge" placeholder="Badge (optional)" class="flex-1 px-4 py-2 rounded-xl border border-gray-200 input-focus outline-none text-sm">
+                        <input type="text" name="badge" placeholder="Badge (optional)"
+                            class="flex-1 px-4 py-2 rounded-xl border border-gray-200 input-focus outline-none text-sm">
                     </div>
-                    <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
+                    <button type="submit"
+                        class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
                         Add Product
                     </button>
                 </form>
@@ -840,15 +880,20 @@
                         </div>
                         <span class="text-xl font-bold text-white brand-font">FRESHBOX</span>
                     </div>
-                    <p class="text-sm leading-relaxed">Bringing the freshest organic produce from local farms directly to your doorstep. Healthy living made simple.</p>
+                    <p class="text-sm leading-relaxed">Bringing the freshest organic produce from local farms directly
+                        to your doorstep. Healthy living made simple.</p>
                 </div>
                 <div>
                     <h4 class="text-white font-semibold mb-4">Quick Links</h4>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="#" onclick="app.navigate('home')" class="hover:text-green-400 transition-colors">Home</a></li>
-                        <li><a href="#" onclick="app.scrollToProducts()" class="hover:text-green-400 transition-colors">Shop</a></li>
-                        <li><a href="#" onclick="app.navigate('about')" class="hover:text-green-400 transition-colors">About Us</a></li>
-                        <li><a href="#" onclick="app.navigate('contact')" class="hover:text-green-400 transition-colors">Contact</a></li>
+                        <li><a href="#" onclick="app.navigate('home')"
+                                class="hover:text-green-400 transition-colors">Home</a></li>
+                        <li><a href="#" onclick="app.scrollToProducts()"
+                                class="hover:text-green-400 transition-colors">Shop</a></li>
+                        <li><a href="#" onclick="app.navigate('about')"
+                                class="hover:text-green-400 transition-colors">About Us</a></li>
+                        <li><a href="#" onclick="app.navigate('contact')"
+                                class="hover:text-green-400 transition-colors">Contact</a></li>
                     </ul>
                 </div>
                 <div>
@@ -863,18 +908,24 @@
                 <div>
                     <h4 class="text-white font-semibold mb-4">Contact Us</h4>
                     <ul class="space-y-2 text-sm">
-                        <li class="flex items-center"><i data-lucide="mail" class="w-4 h-4 mr-2"></i> hello@freshbox.com</li>
-                        <li class="flex items-center"><i data-lucide="phone" class="w-4 h-4 mr-2"></i> 1-800-FRESH-BOX</li>
-                        <li class="flex items-center"><i data-lucide="map-pin" class="w-4 h-4 mr-2"></i> 123 Farm Road, CA</li>
+                        <li class="flex items-center"><i data-lucide="mail" class="w-4 h-4 mr-2"></i> hello@freshbox.com
+                        </li>
+                        <li class="flex items-center"><i data-lucide="phone" class="w-4 h-4 mr-2"></i> 1-800-FRESH-BOX
+                        </li>
+                        <li class="flex items-center"><i data-lucide="map-pin" class="w-4 h-4 mr-2"></i> 123 Farm Road,
+                            CA</li>
                     </ul>
                     <div class="flex space-x-4 mt-4">
-                        <a href="#" class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors">
+                        <a href="#"
+                            class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors">
                             <i data-lucide="facebook" class="w-4 h-4"></i>
                         </a>
-                        <a href="#" class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors">
+                        <a href="#"
+                            class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors">
                             <i data-lucide="instagram" class="w-4 h-4"></i>
                         </a>
-                        <a href="#" class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors">
+                        <a href="#"
+                            class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors">
                             <i data-lucide="twitter" class="w-4 h-4"></i>
                         </a>
                     </div>
@@ -892,4 +943,5 @@
 
     <script src="app.js"></script>
 </body>
+
 </html>
