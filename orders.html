@@ -35,17 +35,17 @@
         }
 
         .tab-active {
-    border-bottom: 2px solid #16a34a;
-    color: #16a34a;
-}
+            border-bottom: 2px solid #16a34a;
+            color: #16a34a;
+        }
 
-.tab-inactive {
-    color: #6b7280;
-}
+        .tab-inactive {
+            color: #6b7280;
+        }
 
-.tab-inactive:hover {
-    color: #374151;
-}
+        .tab-inactive:hover {
+            color: #374151;
+        }
 
         /* .status-badge { @apply px-3 py-1 rounded-full text-xs font-semibold; }
         .status-pending { @apply bg-yellow-100 text-yellow-800; }
@@ -89,6 +89,10 @@
                 background-position: -200% 0;
             }
         }
+
+        .sticky {
+            z-index: 999;
+        }
     </style>
 </head>
 
@@ -97,7 +101,7 @@
     <!-- Navigation -->
     <nav class="fixed w-full z-50 glass border-b border-gray-200/50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-20">
+            <div class="flex justify-between items-center h-16 md:h-20">
                 <div class="flex items-center cursor-pointer" onclick="window.location.href='index.html'">
                     <div
                         class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mr-3 shadow-lg">
@@ -105,38 +109,49 @@
                     </div>
                     <span class="text-2xl font-bold text-gray-900 brand-font tracking-tight">FB</span>
                 </div>
-                <div class="flex items-center space-x-6">
+                <div class="flex items-center space-x-4">
+
+                    <!-- Home Icon -->
+                    <button onclick="window.location.href='index.html'"
+                        class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                        <i data-lucide="home" class="w-5 h-5 text-gray-700"></i>
+                    </button>
+
+                    <!-- User Avatar -->
                     <div class="relative group">
                         <button
                             class="flex items-center space-x-2 hover:bg-gray-100 rounded-full px-3 py-2 transition-colors">
                             <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold"
                                 id="user-avatar">U</div>
                         </button>
+
+                        <!-- Dropdown -->
                         <div
                             class="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                             <button onclick="app.signOut()"
-                                class="block w-full text-left px-4 py-3 hover:bg-gray-50 rounded-b-xl text-red-600 text-sm font-medium">Sign
-                                Out</button>
-                                <button onclick="app.navigate('home')"
-                                class="block w-full text-left px-4 py-3 hover:bg-gray-50 rounded-b-xl text-sm font-medium">Home</button>
+                                class="block w-full text-left px-4 py-3 hover:bg-gray-50 text-red-600 text-sm font-medium">
+                                Sign Out
+                            </button>
+
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main class="pt-24 pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <main class="pt-20 pb-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <!-- Page Tabs -->
-        <div class="flex space-x-8 border-b border-gray-200 mb-8">
+        <div class="flex space-x-6 overflow-x-auto border-b border-gray-200 mb-6 pb-1">
             <button onclick="app.showSection('orders')" id="tab-orders"
-                class="pb-4 text-lg font-medium tab-active transition-colors">
+                class="pb-3 text-base md:text-lg font-medium whitespace-nowrap tab-active">
                 My Orders
             </button>
             <button onclick="app.showSection('profile')" id="tab-profile"
-                class="pb-4 text-lg font-medium tab-inactive transition-colors">
+                class="pb-3 text-base md:text-lg font-medium whitespace-nowrap tab-inactive">
                 Profile Settings
             </button>
         </div>
@@ -148,7 +163,7 @@
                     <h1 class="text-3xl font-bold text-gray-900 brand-font">Order History</h1>
                     <p class="text-gray-600 mt-1">Track and manage your fresh deliveries</p>
                 </div>
-                <div class="flex space-x-3">
+                <div class="flex w-full md:w-auto">
                     <select id="order-filter" onchange="app.filterOrders(this.value)"
                         class="px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-green-500">
                         <option value="all">All Orders</option>
@@ -187,7 +202,7 @@
 
         <!-- Profile Section -->
         <section id="profile-section" class="hidden animate-fade-in">
-            <div class="grid md:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Profile Sidebar -->
                 <div class="md:col-span-1">
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center">
@@ -352,7 +367,7 @@
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="app.closeOrderDetail()"></div>
         <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
             <div
-                class="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl pointer-events-auto animate-fade-in">
+                class="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl mx-2 pointer-events-auto animate-fade-in">
                 <div class="sticky top-0 bg-white border-b border-gray-100 p-6 flex justify-between items-center">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-900 brand-font" id="modal-order-number">Order #FB-001
@@ -715,10 +730,10 @@
                     const totalItems = order.order_items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
                     return `
-                        <div class="order-card bg-white rounded-2xl shadow-sm border border-gray-100 p-6 cursor-pointer" onclick="app.showOrderDetail(${order.id})">
-                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <div class="flex items-start space-x-4">
-                                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div class="order-card bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-6 cursor-pointer" onclick="app.showOrderDetail(${order.id})">
+                            <div class="flex flex-col gap-3 md:flex-row md:items-center justify-between">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
                                         <i data-lucide="package" class="w-6 h-6 text-green-600"></i>
                                     </div>
                                     <div>
@@ -731,7 +746,7 @@
                                 </div>
                                 <div class="flex items-center justify-between md:text-right gap-4">
                                     <div>
-                                        <p class="text-2xl font-bold text-gray-900">₹${parseFloat(order.total_amount)}</p>
+                                        <p class="text-xl md:text-2xl font-bold text-gray-900">₹${parseFloat(order.total_amount)}</p>
                                         <p class="text-sm text-gray-500">${order.payment_method}</p>
                                     </div>
                                     <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
