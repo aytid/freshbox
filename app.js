@@ -97,6 +97,9 @@ const app = {
         this.closeAuth();
 
         this.showToast("Success", "Welcome back!");
+        document.getElementById("mobile-signin").classList.add("hidden");
+        document.getElementById("mobile-user-menu").classList.remove("hidden");
+
     },
     async handleSignUp(e) {
         e.preventDefault();
@@ -140,7 +143,8 @@ const app = {
         this.updateUserUI(null);
 
         this.showToast("Signed Out", "See you soon!");
-
+        document.getElementById("mobile-signin").classList.remove("hidden");
+        document.getElementById("mobile-user-menu").classList.add("hidden");
         location.reload();
     },
     updateUserUI(user) {
@@ -268,52 +272,50 @@ const app = {
             )
             .subscribe();
     },
+
     renderProducts() {
         const grid = document.getElementById('products-grid');
         if (!grid) return;
 
-        // Only show available products
-        const availableProducts = this.state.products.filter(p => p.in_stock && p.stock > 0);
-
         const filtered = this.state.currentCategory === 'all'
-            ? availableProducts
-            : availableProducts.filter(p => {
+            ? this.state.products
+            : this.state.products.filter(p => {
                 if (this.state.currentCategory === 'organic') return p.organic;
                 return p.category === this.state.currentCategory;
             });
 
         if (filtered.length === 0) {
-            grid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500">No products available in this category.</div>';
+            grid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500">No products found in this category.</div>';
             lucide.createIcons();
             return;
         }
 
         grid.innerHTML = filtered.map(product => `
-        <div class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 group">
-            <div class="relative overflow-hidden h-56">
-                <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" onerror="this.src='https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png'">
-                ${product.badge ? `<span class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-green-700 text-xs font-bold px-3 py-1 rounded-full shadow-sm">${product.badge}</span>` : ''}
-                ${product.organic ? `<span class="absolute top-3 right-3 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm flex items-center"><i data-lucide="leaf" class="w-3 h-3 mr-1"></i>ORGANIC</span>` : ''}
-                ${product.stock < 10 ? `<span class="absolute bottom-3 left-3 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">Only ${product.stock} left</span>` : ''}
-                <button onclick="app.quickAdd(${product.id})" class="absolute bottom-3 right-3 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-green-600 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all hover:bg-green-600 hover:text-white">
-                    <i data-lucide="plus" class="w-5 h-5"></i>
-                </button>
-            </div>
-            <div class="p-5">
-                <div class="flex justify-between items-start mb-2">
-                    <div>
-                        <h3 class="font-semibold text-gray-900 text-lg">${product.name}</h3>
-                        <p class="text-sm text-gray-500">${product.unit}</p>
-                    </div>
-                    <span class="text-lg font-bold text-green-600">₹${parseFloat(product.price).toFixed(0)}</span>
+            <div class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 group">
+                <div class="relative overflow-hidden h-56">
+                    <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" onerror="this.src='https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png'">
+                    ${product.badge ? `<span class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-green-700 text-xs font-bold px-3 py-1 rounded-full shadow-sm">${product.badge}</span>` : ''}
+                    ${product.organic ? `<span class="absolute top-3 right-3 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm flex items-center"><i data-lucide="leaf" class="w-3 h-3 mr-1"></i>ORGANIC</span>` : ''}
+                    ${product.stock !== undefined && product.stock < 10 ? `<span class="absolute bottom-3 left-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">Only ${product.stock} left</span>` : ''}
+                    <button onclick="app.quickAdd(${product.id})" class="absolute bottom-3 right-3 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-green-600 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all hover:bg-green-600 hover:text-white">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                    </button>
                 </div>
-                <button onclick="app.addToCart(${product.id})" class="w-full mt-3 bg-gray-900 text-white py-3 rounded-xl font-medium hover:bg-green-600 transition-colors flex items-center justify-center group-btn">
-                    <i data-lucide="shopping-bag" class="w-4 h-4 mr-2"></i>
-                    Add to Cart
-                </button>
+                <div class="p-5">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h3 class="font-semibold text-gray-900 text-lg">${product.name}</h3>
+                            <p class="text-sm text-gray-500">${product.unit}</p>
+                        </div>
+                        <span class="text-lg font-bold text-green-600">₹${parseFloat(product.price).toFixed(0)}</span>
+                    </div>
+                    <button onclick="app.addToCart(${product.id})" class="w-full mt-3 bg-gray-900 text-white py-3 rounded-xl font-medium hover:bg-green-600 transition-colors flex items-center justify-center group-btn" ${product.stock === 0 ? 'disabled' : ''}>
+                        <i data-lucide="shopping-bag" class="w-4 h-4 mr-2"></i>
+                        ${product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                    </button>
+                </div>
             </div>
-        </div>
-    `).join('');
+        `).join('');
 
         lucide.createIcons();
     },
@@ -331,78 +333,90 @@ const app = {
     },
 
     // ==================== CART ====================
-    async addToCart(productId, qty = 1) {
+    async addToCart(productId) {
+        if (!this.state.user) {
+            this.showToast('Please Sign In', 'Login to add items to cart');
+            this.toggleAuth();
+            return;
+        }
 
-    if (!this.state.user) {
-        this.showToast('Please Sign In', 'Login to add items to cart');
-        this.toggleAuth();
-        return;
-    }
+        try {
 
-    try {
+            const pid = parseInt(productId);
+            const userId = this.state.user.id;
 
-        const pid = parseInt(productId);
-        const quantity = parseInt(qty) || 1;
-        const userId = this.state.user.id;
-
-        let { data: cart } = await this.supabase
-            .from("carts")
-            .select("*")
-            .eq("user_id", userId)
-            .maybeSingle();
-
-        if (!cart) {
-
-            const { data: newCart, error: createError } = await this.supabase
+            let { data: cart, error: cartError } = await this.supabase
                 .from("carts")
-                .insert({ user_id: userId })
-                .select()
-                .single();
+                .select("*")
+                .eq("user_id", userId)
+                .maybeSingle();
 
-            if (createError) throw createError;
+            if (!cart) {
 
-            cart = newCart;
-        }
+                const { data: newCart, error: createError } = await this.supabase
+                    .from("carts")
+                    .insert({ user_id: userId })
+                    .select()
+                    .single();
 
-        const { data: existingItem } = await this.supabase
-            .from("cart_items")
-            .select("*")
-            .eq("cart_id", cart.id)
-            .eq("product_id", pid)
-            .maybeSingle();
+                if (createError) {
+                    console.error("Cart creation error:", createError);
+                    throw createError;
+                }
 
-        if (existingItem) {
+                cart = newCart;
+            }
 
-            const { error: updateError } = await this.supabase
+            // 2. Check existing item
+            const { data: existingItem, error: existingError } = await this.supabase
                 .from("cart_items")
-                .update({ quantity: existingItem.quantity + quantity })
-                .eq("id", existingItem.id);
+                .select("*")
+                .eq("cart_id", cart.id)
+                .eq("product_id", pid)
+                .maybeSingle();
 
-            if (updateError) throw updateError;
 
-        } else {
+            if (existingItem) {
+                // Update quantity
+                const { error: updateError } = await this.supabase
+                    .from("cart_items")
+                    .update({ quantity: existingItem.quantity + 1 })
+                    .eq("id", existingItem.id);
 
-            const { error: insertError } = await this.supabase
-                .from("cart_items")
-                .insert({
-                    cart_id: cart.id,
-                    product_id: pid,
-                    quantity: quantity
-                });
+                if (updateError) {
+                    console.error("Update quantity error:", updateError);
+                    throw updateError;
+                }
 
-            if (insertError) throw insertError;
+            } else {
+                // Insert new item
+                const { data: newItem, error: insertError } = await this.supabase
+                    .from("cart_items")
+                    .insert({
+                        cart_id: cart.id,
+                        product_id: pid,
+                        quantity: 1
+                    })
+                    .select()
+                    .single();
 
+                if (insertError) {
+                    console.error("Insert item error:", insertError);
+                    throw insertError;
+                }
+
+            }
+
+            this.showToast("Added to Cart", "Item added successfully");
+
+            // Force reload cart
+            await this.loadCart();
+
+        } catch (err) {
+            console.error("Add to cart error:", err);
+            this.showToast("Error", "Failed to add item to cart: " + err.message);
         }
-
-        this.showToast("Added to Cart", "Item added successfully");
-
-        await this.loadCart();
-
-    } catch (err) {
-        console.error("Add to cart error:", err);
-        this.showToast("Error", "Failed to add item to cart: " + err.message);
-    }
-},
+    },
     async loadCart() {
         if (!this.state.user) {
             this.state.cart = [];
@@ -1029,22 +1043,25 @@ const app = {
         }
     },
 
-    toggleMobileMenu() {
+    toggleMobileMenu: function () {
         const menu = document.getElementById('mobile-menu');
         const panel = document.getElementById('mobile-menu-panel');
 
-        if (!menu || !panel) return;
-
         if (menu.classList.contains('hidden')) {
+            // Show menu
             menu.classList.remove('hidden');
+            // Small timeout to allow the browser to register the 'hidden' removal 
+            // before starting the CSS transition
             setTimeout(() => {
                 panel.classList.remove('translate-x-full');
             }, 10);
         } else {
+            // Hide menu
             panel.classList.add('translate-x-full');
+            // Wait for the transition to finish (400ms) before hiding the div
             setTimeout(() => {
                 menu.classList.add('hidden');
-            }, 300);
+            }, 400);
         }
     },
 

@@ -103,11 +103,9 @@
                         class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mr-3 shadow-lg">
                         <i data-lucide="leaf" class="w-6 h-6 text-white"></i>
                     </div>
-                    <span class="text-2xl font-bold text-gray-900 brand-font tracking-tight">FRESHBOX</span>
+                    <span class="text-2xl font-bold text-gray-900 brand-font tracking-tight">FB</span>
                 </div>
                 <div class="flex items-center space-x-6">
-                    <button onclick="app.navigate('home')"
-                        class="text-gray-700 hover:text-green-600 font-medium transition-colors">Home</button>
                     <div class="relative group">
                         <button
                             class="flex items-center space-x-2 hover:bg-gray-100 rounded-full px-3 py-2 transition-colors">
@@ -119,6 +117,8 @@
                             <button onclick="app.signOut()"
                                 class="block w-full text-left px-4 py-3 hover:bg-gray-50 rounded-b-xl text-red-600 text-sm font-medium">Sign
                                 Out</button>
+                                <button onclick="app.navigate('home')"
+                                class="block w-full text-left px-4 py-3 hover:bg-gray-50 rounded-b-xl text-sm font-medium">Home</button>
                         </div>
                     </div>
                 </div>
@@ -731,7 +731,7 @@
                                 </div>
                                 <div class="flex items-center justify-between md:text-right gap-4">
                                     <div>
-                                        <p class="text-2xl font-bold text-gray-900">$${parseFloat(order.total_amount).toFixed(2)}</p>
+                                        <p class="text-2xl font-bold text-gray-900">₹${parseFloat(order.total_amount)}</p>
                                         <p class="text-sm text-gray-500">${order.payment_method}</p>
                                     </div>
                                     <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
@@ -810,9 +810,9 @@
                         <img src="${item.products?.image || 'https://via.placeholder.com/60'}" class="w-16 h-16 object-cover rounded-lg">
                         <div class="flex-1">
                             <h4 class="font-medium text-gray-900">${item.name_at_time}</h4>
-                            <p class="text-sm text-gray-500">Qty: ${item.quantity} × $${parseFloat(item.price_at_time).toFixed(2)}</p>
+                            <p class="text-sm text-gray-500">Qty: ${item.quantity} × ₹${parseFloat(item.price_at_time)}</p>
                         </div>
-                        <p class="font-semibold text-gray-900">$${(item.price_at_time * item.quantity).toFixed(2)}</p>
+                        <p class="font-semibold text-gray-900">₹${(item.price_at_time * item.quantity)}</p>
                     </div>
                 `).join('') || '<p class="text-gray-500">No items found</p>';
 
@@ -825,9 +825,9 @@
                 // Totals
                 const subtotal = order.order_items?.reduce((sum, item) => sum + (item.price_at_time * item.quantity), 0) || 0;
                 const tax = subtotal * 0.08;
-                document.getElementById('modal-subtotal').textContent = `$${subtotal.toFixed(2)}`;
-                document.getElementById('modal-tax').textContent = `$${tax.toFixed(2)}`;
-                document.getElementById('modal-total').textContent = `$${parseFloat(order.total_amount).toFixed(2)}`;
+                document.getElementById('modal-subtotal').textContent = `₹${subtotal}`;
+                document.getElementById('modal-tax').textContent = `₹${tax}`;
+                document.getElementById('modal-total').textContent = `₹${parseFloat(order.total_amount)}`;
 
                 // Show/hide actions based on status
                 const actions = document.getElementById('modal-actions');

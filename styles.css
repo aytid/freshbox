@@ -399,3 +399,23 @@ button:disabled {
     background: #22c55e;
     color: white;
 }
+
+/* Ensure the panel slides in from the right */
+#mobile-menu-panel {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Logic for the slide effect handled via JS by removing translate-x-full */
+.menu-open #mobile-menu-panel {
+    transform: translateX(0);
+}
+
+/* Modern backdrop animation */
+@keyframes fadeBlur {
+    from { opacity: 0; backdrop-filter: blur(0px); }
+    to { opacity: 1; backdrop-filter: blur(8px); }
+}
+
+#mobile-menu:not(.hidden) .absolute.bg-gray-900\/40 {
+    animation: fadeBlur 0.3s ease-out;
+}
